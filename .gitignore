@@ -1,0 +1,20 @@
+# IntelliJ
+.idea/
+*.iml
+
+# Backend
+target/
+*.log
+
+# Frontend
+node_modules/
+dist/
+.vite/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.*
