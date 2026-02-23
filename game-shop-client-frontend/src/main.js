@@ -1,8 +1,7 @@
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
-import App from './App.vue'
+import { createApp } from "vue"
+import App from "./App.vue"
+import router from "./routers"   // ⚠️ kiểm tra path này
 
-const app = createApp(App)
-
-app.use(createPinia())
-app.mount('#app')
+createApp(App)
+    .use(router)   // 🔥 CÁI NÀY BẮT BUỘC PHẢI CÓ
+    .mount("#app")
