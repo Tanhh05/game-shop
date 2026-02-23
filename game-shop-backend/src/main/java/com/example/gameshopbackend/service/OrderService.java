@@ -9,4 +9,7 @@ public interface OrderService {
 
     @Transactional
     void cancelOrder(Long orderId);
+
+    @Transactional
+    Order buyNow(Long userId, CreateOrderRequest request);
 }

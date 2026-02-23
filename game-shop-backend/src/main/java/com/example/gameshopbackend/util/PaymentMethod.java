@@ -1,5 +1,8 @@
 package com.example.gameshopbackend.util;
 
 public enum PaymentMethod {
-    PAYPAL
+    PAYPAL,
+    CARD,
+    ATM,
+    MOMO
 }

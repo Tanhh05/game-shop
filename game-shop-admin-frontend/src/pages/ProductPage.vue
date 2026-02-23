@@ -4,7 +4,7 @@
     <!-- HEADER -->
     <div class="header">
       <h2>Quản Lý Sản Phẩm</h2>
-      <button class="btn-add">+ Thêm sản phẩm mới</button>
+      <button class="btn-add" @click="goAdd">+ Thêm sản phẩm mới</button>
     </div>
 
     <!-- TABLE -->
@@ -38,18 +38,36 @@
           </td>
 
           <td>
-              <span :class="p.status ? 'active' : 'inactive'">
-                {{ p.status ? 'ĐANG BÁN' : 'NGỪNG BÁN' }}
-              </span>
+            <span :class="p.status ? 'active' : 'inactive'">
+              {{ p.status ? 'ĐANG BÁN' : 'NGỪNG BÁN' }}
+            </span>
           </td>
 
           <td class="actions">
-            ✏️
-            🗑️
+            ✏️ 🗑️
           </td>
         </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- PAGINATION -->
+    <div class="pagination" v-if="totalPages > 1">
+      <button
+          :disabled="currentPage === 0"
+          @click="changePage(currentPage - 1)">
+        ←
+      </button>
+
+      <span>
+        Trang {{ currentPage + 1 }} / {{ totalPages }}
+      </span>
+
+      <button
+          :disabled="currentPage === totalPages - 1"
+          @click="changePage(currentPage + 1)">
+        →
+      </button>
     </div>
 
   </div>
@@ -57,17 +75,41 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import productService from "@/services/product.service";
 
+const router = useRouter();
+const goAdd = () => {
+  // điều hướng tới trang thêm sản phẩm đã đăng ký trong router
+  router.push('/admin/products/add');
+};
+
 const products = ref([]);
+const currentPage = ref(0);
+const totalPages = ref(0);
+const size = 10;
 
 const fetchProducts = async () => {
   try {
-    const res = await productService.getProducts();
-    products.value = res.data; // backend trả List
+    const res = await productService.getProducts({
+      page: currentPage.value,
+      size: size,
+      sortBy: "id",
+      direction: "desc"
+    });
+
+    // 🔥 backend trả Page
+    products.value = res.data.content;
+    totalPages.value = res.data.totalPages;
+
   } catch (error) {
     console.error("Lỗi khi tải sản phẩm:", error);
   }
+};
+
+const changePage = (page) => {
+  currentPage.value = page;
+  fetchProducts();
 };
 
 onMounted(fetchProducts);
@@ -84,7 +126,6 @@ const formatPrice = (price) => {
   color: white;
 }
 
-/* Header */
 .header {
   display: flex;
   justify-content: space-between;
@@ -100,7 +141,6 @@ const formatPrice = (price) => {
   cursor: pointer;
 }
 
-/* Table */
 .table-box {
   background: #1a120b;
   padding: 20px;
@@ -162,5 +202,18 @@ img {
 .actions {
   cursor: pointer;
   font-size: 18px;
+}
+
+.pagination {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.pagination button {
+  padding: 6px 12px;
+  cursor: pointer;
 }
 </style>

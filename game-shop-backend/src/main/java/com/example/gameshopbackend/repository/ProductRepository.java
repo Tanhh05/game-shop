@@ -1,6 +1,8 @@
 package com.example.gameshopbackend.repository;
 
 import com.example.gameshopbackend.entity.Product;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -13,4 +15,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByGame_IdAndStatusTrue(Long gameId);
 
     Optional<Product> findBySlugAndStatusTrue(String slug);
+
+    Page<Product> findByStatusTrue(Pageable pageable);
+
 }

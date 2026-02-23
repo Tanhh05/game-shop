@@ -1,0 +1,11 @@
+package com.example.gameshopbackend.exception;
+
+/**
+ * Exception khi sản phẩm hết hàng
+ */
+public class OutOfStockException extends RuntimeException {
+    public OutOfStockException(String message) {
+        super(message);
+    }
+}
+

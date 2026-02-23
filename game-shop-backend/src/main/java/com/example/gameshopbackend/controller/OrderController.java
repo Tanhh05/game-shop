@@ -60,5 +60,13 @@ public class OrderController {
         );
     }
 
+    @PostMapping("/buy-now")
+    public ResponseEntity<?> buyNow(
+            @RequestParam Long userId,
+            @RequestBody CreateOrderRequest request
+    ) {
+        Order order = orderService.buyNow(userId, request);
+        return ResponseEntity.ok(orderMapper.toResponse(order));
+    }
 
 }

@@ -37,6 +37,7 @@ public class PaymentTransaction {
     @Enumerated(EnumType.STRING)
     private PaymentStatus status;
 
+    private String provider;  // e.g., "PAYPAL", "STRIPE", "MOMO", "ATM"
     private String paypalOrderId;
     private String paypalCaptureId;
 
