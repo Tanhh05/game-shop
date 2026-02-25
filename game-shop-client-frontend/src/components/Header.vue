@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from "vue"
 import { useRouter } from "vue-router"
+import { getBalance } from "@/services/wallet.service"
 
 const router = useRouter()
 
@@ -13,23 +14,27 @@ const toggleMenu = () => {
   isOpen.value = !isOpen.value
 }
 
-// Load user info
-const loadUser = () => {
+const loadUser = async () => {
   const token = localStorage.getItem("token")
 
-  if (token) {
-    isLogin.value = true
-    username.value = localStorage.getItem("username") || ""
-    balance.value = Number(localStorage.getItem("balance")) || 0
-  } else {
+  if (!token) {
     isLogin.value = false
+    return
+  }
+
+  isLogin.value = true
+  username.value = localStorage.getItem("username") || ""
+
+  try {
+    const res = await getBalance()
+    balance.value = res.data
+  } catch (err) {
+    console.error("Không load được số dư:", err)
   }
 }
 
 onMounted(() => {
   loadUser()
-
-  // Lắng nghe khi balance thay đổi
   window.addEventListener("balance-updated", loadUser)
 })
 
@@ -39,7 +44,8 @@ onBeforeUnmount(() => {
 
 const logout = () => {
   localStorage.clear()
-  loadUser()
+  balance.value = 0
+  isLogin.value = false
   router.push("/login")
 }
 </script>
@@ -56,17 +62,18 @@ const logout = () => {
       <!-- Desktop Menu -->
       <nav class="menu desktop">
         <a class="reseller">RESELLER</a>
-        <a class="deposit">NẠP TIỀN WEB</a>
-
+        <router-link to="/topup" class="deposit">
+          NẠP TIỀN WEB
+        </router-link>
         <template v-if="isLogin">
           <router-link to="/orders">LỊCH SỬ</router-link>
 
           <span class="welcome">
-             {{ username }}
+            WELCOME: {{ username }}
           </span>
 
           <span class="wallet">
-            💰 {{ balance.toLocaleString() }}đ
+            SỐ DƯ: {{ balance.toLocaleString() }}đ
           </span>
 
           <a href="#" @click.prevent="logout">ĐĂNG XUẤT</a>
@@ -89,7 +96,7 @@ const logout = () => {
 
       <template v-if="isLogin">
         <div class="mobile-user">
-          <div>👤 {{ username }}</div>
+          <div> {{ username }}</div>
           <div class="wallet">
             💰 {{ balance.toLocaleString() }}đ
           </div>

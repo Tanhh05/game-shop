@@ -2,6 +2,7 @@ package com.example.gameshopbackend.entity;
 
 
 import com.example.gameshopbackend.util.ItemStatus;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -14,22 +15,31 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Entity
-@Table(name = "game_keys")
-@Getter @Setter
+@Getter
+@Setter
 public class GameKey {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "product_id")
-    private Product product;
-
     private String licenseKey;
 
     @Enumerated(EnumType.STRING)
     private ItemStatus status;
+
+    @Column(name = "rented_by_user_id")
+    private Long rentedByUserId;
+
+    private LocalDateTime expiredAt;
+
+    @ManyToOne
+    private Product product;
+
+    @ManyToOne
+    private OrderDetail orderDetail;
 }
 

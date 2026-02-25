@@ -1,6 +1,7 @@
 package com.example.gameshopbackend.controller;
 
 import com.example.gameshopbackend.dto.request.CreateOrderRequest;
+import com.example.gameshopbackend.dto.response.OrderResponse;
 import com.example.gameshopbackend.entity.Order;
 import com.example.gameshopbackend.mapper.OrderMapper;
 import com.example.gameshopbackend.repository.OrderRepository;
@@ -27,46 +28,27 @@ import java.util.List;
 public class OrderController {
 
     private final OrderService orderService;
-    private final OrderMapper orderMapper;
-    private final OrderRepository orderRepository;
-
-    @PostMapping
-    public ResponseEntity<?> createOrder(
-            @RequestParam Long userId,
-            @RequestBody CreateOrderRequest request
-    ) {
-        Order order = orderService.createOrder(userId, request);
-        return ResponseEntity.ok(orderMapper.toResponse(order));
-    }
 
     @GetMapping("/ping")
     public String ping() {
         return "BE is running OK bây bi nháaa🚀";
     }
 
-    @DeleteMapping("/{orderId}/cancel")
-    public ResponseEntity<?> cancelOrder(@PathVariable Long orderId) {
-        orderService.cancelOrder(orderId);
-        return ResponseEntity.ok("Order cancelled");
-    }
 
-    @GetMapping("/cart")
-    public ResponseEntity<?> getCart(@RequestParam Long userId) {
-        List<Order> carts = orderRepository
-                .findAllByUserIdAndStatus(userId, OrderStatus.PENDING);
-
-        return ResponseEntity.ok(
-                carts.stream().map(orderMapper::toResponse).toList()
-        );
+    @GetMapping("/history")
+    public ResponseEntity<List<OrderResponse>> getPurchaseHistory(
+            @RequestParam Long userId
+    ) {
+        return ResponseEntity.ok(orderService.getPurchaseHistory(userId));
     }
 
     @PostMapping("/buy-now")
-    public ResponseEntity<?> buyNow(
+    public ResponseEntity<OrderResponse> buyNow(
             @RequestParam Long userId,
             @RequestBody CreateOrderRequest request
     ) {
-        Order order = orderService.buyNow(userId, request);
-        return ResponseEntity.ok(orderMapper.toResponse(order));
+        OrderResponse response = orderService.buyNow(userId, request);
+        return ResponseEntity.ok(response);
     }
 
 }

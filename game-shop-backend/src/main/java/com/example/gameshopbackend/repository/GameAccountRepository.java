@@ -2,7 +2,9 @@ package com.example.gameshopbackend.repository;
 
 import com.example.gameshopbackend.entity.GameAccount;
 import com.example.gameshopbackend.util.ItemStatus;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -36,6 +38,17 @@ public interface GameAccountRepository extends JpaRepository<GameAccount, Long> 
      * Kiểm tra tài khoản có tồn tại không
      */
     boolean existsByUsername(String username);
+
+    List<GameAccount> findByOrderDetailId(Long orderDetailId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+       SELECT a FROM GameAccount a
+       WHERE a.product.id = :productId
+       AND a.status = 'AVAILABLE'
+       ORDER BY a.id ASC
+       """)
+    Optional<GameAccount> findFirstAvailableForUpdate(Long productId);
 }
 
 

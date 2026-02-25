@@ -1,7 +1,7 @@
 import api from "@/api/axios"
 
-export const getProducts = (page = 0, size = 10) => {
-    return api.get(`/products?page=${page}&size=${size}`)
+export const getProducts = (params) => {
+    return api.get("/products", { params })
 }
 
 export const getProductBySlug = (slug) => {

@@ -18,12 +18,13 @@ public interface DeliveryService {
      */
     List<DeliveryItemResponse> deliverOrder(Order order);
 
+    Long getAvailableStock(Long productId);
+
     /**
      * Giao hàng một chi tiết đơn hàng
      * @param orderDetail Chi tiết cần giao hàng
      * @return Thông tin sản phẩm được giao
      */
-    DeliveryItemResponse deliverOrderDetail(OrderDetail orderDetail);
 
     /**
      * Kiểm tra xem sản phẩm có thể giao hàng không
@@ -31,11 +32,9 @@ public interface DeliveryService {
      * @param quantity Số lượng cần giao
      * @return true nếu còn hàng, false nếu hết
      */
-    boolean hasStock(Long productId, Integer quantity);
 
     /**
      * Lấy số lượng hàng còn lại của sản phẩm
      */
-    Long getAvailableStock(Long productId);
 }
 

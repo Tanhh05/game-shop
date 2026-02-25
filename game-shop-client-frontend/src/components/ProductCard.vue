@@ -17,9 +17,7 @@ defineProps({
       <p>{{ product.shortDescription }}</p>
 
       <div class="bottom">
-        <span class="price">
-          {{ formatPrice(product.price) }}
-        </span>
+
 
         <router-link
             :to="`/product/${product.slug}`"

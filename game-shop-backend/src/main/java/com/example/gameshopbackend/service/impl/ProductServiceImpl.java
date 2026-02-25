@@ -1,17 +1,22 @@
 package com.example.gameshopbackend.service.impl;
 
+import com.example.gameshopbackend.dto.request.ProductPackageRequest;
 import com.example.gameshopbackend.dto.request.ProductRequest;
 import com.example.gameshopbackend.dto.response.ProductResponse;
 import com.example.gameshopbackend.entity.Game;
 import com.example.gameshopbackend.entity.Product;
+import com.example.gameshopbackend.entity.ProductPackage;
 import com.example.gameshopbackend.mapper.ProductMapper;
 import com.example.gameshopbackend.repository.GameRepository;
+import com.example.gameshopbackend.repository.ProductPackageRepository;
 import com.example.gameshopbackend.repository.ProductRepository;
 import com.example.gameshopbackend.service.ProductService;
+import com.example.gameshopbackend.util.ProductType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,28 +28,14 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final GameRepository gameRepository;
     private final ProductMapper productMapper;
+    private final ProductPackageRepository productPackageRepository;
 
     @Override
+    @Transactional
     public ProductResponse create(ProductRequest request) {
-        // validate business fields
-        if (request == null) {
-            throw new IllegalArgumentException("Dữ liệu sản phẩm không hợp lệ");
-        }
-        if (request.getGameId() == null) {
-            throw new IllegalArgumentException("gameId là bắt buộc");
-        }
-        if (request.getTitle() == null || request.getTitle().isBlank()) {
-            throw new IllegalArgumentException("Title là bắt buộc");
-        }
-        if (request.getSlug() == null || request.getSlug().isBlank()) {
-            throw new IllegalArgumentException("Slug là bắt buộc");
-        }
-        if (request.getPrice() == null || request.getPrice() < 0) {
-            throw new IllegalArgumentException("Price phải là số >= 0");
-        }
 
         Game game = gameRepository.findById(request.getGameId())
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy game với id: " + request.getGameId()));
+                .orElseThrow(() -> new IllegalArgumentException("Game not found"));
 
         Product product = new Product();
         product.setGame(game);
@@ -53,14 +44,38 @@ public class ProductServiceImpl implements ProductService {
         product.setTitle(request.getTitle());
         product.setShortDescription(request.getShortDescription());
         product.setDescription(request.getDescription());
-        product.setPrice(request.getPrice());
         product.setThumbnail(request.getThumbnail());
         product.setSlug(request.getSlug());
         product.setStatus(request.getStatus() != null ? request.getStatus() : true);
 
-        productRepository.save(product);
+        // 🔥 Nếu là KEY thì add package vào product trước khi save
+        if (request.getType() == ProductType.KEY) {
 
-        return productMapper.toResponse(product);
+            if (request.getPackages() == null || request.getPackages().isEmpty()) {
+                throw new IllegalArgumentException("KEY phải có ít nhất 1 package");
+            }
+
+            for (ProductPackageRequest pkgReq : request.getPackages()) {
+
+                ProductPackage pkg = new ProductPackage();
+                pkg.setProduct(product);   // set quan hệ ngược
+                pkg.setName(pkgReq.getName());
+                pkg.setPrice(pkgReq.getPrice());
+                pkg.setDurationValue(pkgReq.getDurationValue());
+                pkg.setDurationUnit(pkgReq.getDurationUnit());
+
+                product.getPackages().add(pkg); // 🔥 QUAN TRỌNG
+            }
+        }
+
+        if (request.getType() == ProductType.ACCOUNT && request.getPackages() != null) {
+            throw new IllegalArgumentException("ACCOUNT không được có package");
+        }
+
+        // 🔥 Chỉ cần save product (cascade sẽ save package)
+        Product savedProduct = productRepository.save(product);
+
+        return productMapper.toResponse(savedProduct);
     }
 
     @Override

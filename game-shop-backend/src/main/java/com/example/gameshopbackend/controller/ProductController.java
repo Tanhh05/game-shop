@@ -59,9 +59,6 @@ public class ProductController {
             if (request.getSlug() == null || request.getSlug().isBlank()) {
                 throw new IllegalArgumentException("Slug là bắt buộc");
             }
-            if (request.getPrice() == null || request.getPrice() < 0) {
-                throw new IllegalArgumentException("Price phải là số >= 0");
-            }
 
             if (file != null && !file.isEmpty()) {
                 String imageUrl = minioService.upload(file);

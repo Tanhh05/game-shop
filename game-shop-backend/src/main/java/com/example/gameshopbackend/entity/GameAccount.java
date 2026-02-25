@@ -31,4 +31,8 @@ public class GameAccount {
 
     @Enumerated(EnumType.STRING)
     private ItemStatus status;
+
+    @ManyToOne
+    @JoinColumn(name = "order_detail_id")
+    private OrderDetail orderDetail;
 }

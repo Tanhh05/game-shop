@@ -2,7 +2,10 @@ package com.example.gameshopbackend.repository;
 
 import com.example.gameshopbackend.entity.GameKey;
 import com.example.gameshopbackend.util.ItemStatus;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -36,6 +39,30 @@ public interface GameKeyRepository extends JpaRepository<GameKey, Long> {
      * Kiểm tra key có tồn tại không
      */
     boolean existsByLicenseKey(String licenseKey);
+
+    List<GameKey> findByOrderDetailId(Long orderDetailId);
+
+//    @Lock(LockModeType.PESSIMISTIC_WRITE)
+//    @Query("""
+//       SELECT k FROM GameKey k
+//       WHERE k.product.id = :productId
+//       AND k.status = 'AVAILABLE'
+//       ORDER BY k.id ASC
+//       """)
+//    Optional<GameKey> findFirstAvailableForUpdate(Long productId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+   SELECT k FROM GameKey k
+   WHERE k.product.id = :productId
+   AND k.status = :status
+   ORDER BY k.id ASC
+""")
+    List<GameKey> findFirstAvailableForUpdate(
+            @Param("productId") Long productId,
+            @Param("status") ItemStatus status,
+            Pageable pageable
+    );
 }
 
 

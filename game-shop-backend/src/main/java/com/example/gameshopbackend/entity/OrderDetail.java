@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -13,6 +14,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.time.LocalDateTime;
 
 
 @Entity
@@ -30,6 +33,9 @@ public class OrderDetail {
     @JsonIgnoreProperties("orderDetails")
     private Order order;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "package_id")
+    private ProductPackage productPackage;
 
     @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)
@@ -39,6 +45,13 @@ public class OrderDetail {
 
     @Column(nullable = false)
     private Integer quantity;
+
+    private String deliveredKey;
+    private String deliveredUsername;
+    private String deliveredPassword;
+
+    private LocalDateTime expiredAt;
+
 }
 
 

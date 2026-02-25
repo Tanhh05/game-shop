@@ -5,23 +5,22 @@ import com.example.gameshopbackend.util.ProductType;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 public class ProductRequest {
 
     private Long gameId;
-
-    private ProductType type;      // KEY / ACCOUNT / TOOL
-    private Platform platform;     // ANDROID / IOS / ALL
-
+    private ProductType type;
+    private Platform platform;
     private String title;
     private String shortDescription;
     private String description;
-
-    private Long price;
     private String thumbnail;
     private String slug;
-
     private Boolean status;
+
+    private List<ProductPackageRequest> packages;
 }
 
