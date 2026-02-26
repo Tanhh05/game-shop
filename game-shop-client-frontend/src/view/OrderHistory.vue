@@ -1,30 +1,61 @@
 <script setup>
 import { ref, onMounted } from "vue"
-import { getCart } from "@/services/order.service"
+import { getPurchaseHistory } from "@/services/order.service"
 
 const orders = ref([])
+const loading = ref(false)
+const currentPage = ref(0)
+const totalPages = ref(0)
+const pageSize = 5
+
+// ⚠️ Lấy userId từ localStorage (theo controller hiện tại)
 const userId = localStorage.getItem("userId")
 
-onMounted(async () => {
+const fetchHistory = async (page = 0) => {
   try {
-    const res = await getCart(userId)
-    orders.value = res.data
-  } catch (err) {
-    console.error("Không tải được lịch sử giao dịch")
-  }
-})
-</script>
+    loading.value = true
 
+    const res = await getPurchaseHistory(userId, page, pageSize)
+
+    orders.value = res.data.content || []
+    totalPages.value = res.data.totalPages || 0
+    currentPage.value = res.data.number || 0
+
+  } catch (err) {
+    console.error("Không tải được lịch sử giao dịch", err)
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  fetchHistory()
+})
+
+const formatCurrency = (value) => {
+  if (!value) return "0 đ"
+  return value.toLocaleString("vi-VN") + " đ"
+}
+
+</script>
 <template>
   <section class="history-section">
     <div class="container">
       <h2 class="title">LỊCH SỬ GIAO DỊCH</h2>
 
-      <div v-if="orders.length === 0" class="empty">
+      <!-- Loading -->
+      <div v-if="loading" class="loading">
+        Đang tải dữ liệu...
+      </div>
+
+      <!-- Empty -->
+      <div v-else-if="orders.length === 0" class="empty">
         Bạn chưa có giao dịch nào.
       </div>
 
+      <!-- Orders -->
       <div
+          v-else
           v-for="order in orders"
           :key="order.id"
           class="order-card"
@@ -37,7 +68,9 @@ onMounted(async () => {
 
           <div>
             <strong>Trạng thái:</strong>
-            <span class="success">{{ order.status }}</span>
+            <span class="success">
+              {{ order.status }}
+            </span>
           </div>
         </div>
 
@@ -45,7 +78,7 @@ onMounted(async () => {
         <div class="order-info">
           <div>
             <strong>Tổng tiền:</strong>
-            {{ order.totalAmount.toLocaleString() }} đ
+            {{ formatCurrency(order.totalAmount) }}
           </div>
 
           <div>
@@ -65,34 +98,53 @@ onMounted(async () => {
               {{ item.productName }}
             </div>
 
-            <div>Giá: {{ item.price.toLocaleString() }} đ</div>
+            <div>Giá: {{ formatCurrency(item.price) }}</div>
             <div>Số lượng: {{ item.quantity }}</div>
 
             <!-- KEY -->
             <div v-if="item.key" class="delivery-box key-box">
               🔑 Key của bạn:
               <span class="key-value">
-                {{ item.key }}
+                {{ (item.key) }}
               </span>
             </div>
 
-            <!-- ACCOUNT -->
+            <!-- ACCOUNT (Không hiển thị password) -->
             <div v-if="item.username" class="delivery-box account-box">
               👤 Tài khoản:
               <b>{{ item.username }}</b>
-              <br />
-              🔒 Mật khẩu:
-              <b>{{ item.password }}</b>
             </div>
 
           </div>
         </div>
+      </div>
 
+      <!-- Pagination -->
+      <div
+          v-if="totalPages > 1"
+          class="pagination"
+      >
+        <button
+            :disabled="currentPage === 0"
+            @click="fetchHistory(currentPage - 1)"
+        >
+          ◀ Trước
+        </button>
+
+        <span>
+          Trang {{ currentPage + 1 }} / {{ totalPages }}
+        </span>
+
+        <button
+            :disabled="currentPage === totalPages - 1"
+            @click="fetchHistory(currentPage + 1)"
+        >
+          Sau ▶
+        </button>
       </div>
     </div>
   </section>
 </template>
-
 <style scoped>
 .history-section {
   background: #f9f9f9;
@@ -113,10 +165,12 @@ onMounted(async () => {
   padding-left: 12px;
 }
 
+.loading,
 .empty {
   padding: 20px;
   background: #fff;
   border: 1px solid #eee;
+  text-align: center;
 }
 
 .order-card {
@@ -158,7 +212,6 @@ onMounted(async () => {
   font-weight: 600;
 }
 
-/* DELIVERY BOX */
 .delivery-box {
   margin-top: 10px;
   padding: 12px;
@@ -183,5 +236,26 @@ onMounted(async () => {
   border-radius: 6px;
   margin-left: 6px;
   font-weight: 600;
+}
+
+.pagination {
+  margin-top: 25px;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  align-items: center;
+}
+
+.pagination button {
+  padding: 6px 14px;
+  border: 1px solid #ddd;
+  background: #fff;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>

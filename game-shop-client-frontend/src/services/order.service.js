@@ -1,7 +1,12 @@
 import api from "@/api/axios"
 
-export const getCart = (userId) => {
-    return api.get(`/orders/history?userId=${userId}`)
+export const getPurchaseHistory = (userId, page = 0, size = 10) => {
+    return api.get("/orders/history", {
+        params: {
+            page,
+            size
+        }
+    })
 }
 
 export const buyNow = (userId, data) => {

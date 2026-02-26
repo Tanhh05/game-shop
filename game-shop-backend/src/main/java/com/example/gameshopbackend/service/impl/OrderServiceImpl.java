@@ -2,7 +2,6 @@ package com.example.gameshopbackend.service.impl;
 
 import com.example.gameshopbackend.dto.request.CreateOrderRequest;
 import com.example.gameshopbackend.dto.request.OrderItemRequest;
-import com.example.gameshopbackend.dto.response.DeliveryItemResponse;
 import com.example.gameshopbackend.dto.response.OrderItemResponse;
 import com.example.gameshopbackend.dto.response.OrderResponse;
 import com.example.gameshopbackend.entity.GameAccount;
@@ -12,7 +11,6 @@ import com.example.gameshopbackend.entity.OrderDetail;
 import com.example.gameshopbackend.entity.Product;
 import com.example.gameshopbackend.entity.ProductPackage;
 import com.example.gameshopbackend.entity.User;
-import com.example.gameshopbackend.exception.OutOfStockException;
 import com.example.gameshopbackend.mapper.OrderMapper;
 import com.example.gameshopbackend.repository.GameAccountRepository;
 import com.example.gameshopbackend.repository.GameKeyRepository;
@@ -27,6 +25,10 @@ import com.example.gameshopbackend.util.ItemStatus;
 import com.example.gameshopbackend.util.OrderStatus;
 import com.example.gameshopbackend.util.ProductType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,7 +36,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -186,15 +187,26 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderResponse> getPurchaseHistory(Long userId) {
+    public Page<OrderResponse> getPurchaseHistory(
+            Long userId,
+            int page,
+            int size
+    ) {
 
-        List<Order> orders = orderRepository
-                .findAllByUserIdAndStatusOrderByCreatedAtDesc(
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by("createdAt").descending()
+        );
+
+        Page<Order> orderPage = orderRepository
+                .findAllByUserIdAndStatus(
                         userId,
-                        OrderStatus.SUCCESS
+                        OrderStatus.SUCCESS,
+                        pageable
                 );
 
-        return orders.stream().map(order -> {
+        return orderPage.map(order -> {
 
             OrderResponse response = new OrderResponse();
             response.setId(order.getId());
@@ -214,17 +226,17 @@ public class OrderServiceImpl implements OrderService {
                 itemResponse.setQuantity(detail.getQuantity());
                 itemResponse.setPrice(detail.getPrice());
 
-                // 🔥 Lấy KEY đã bán
-                List<GameKey> keys = gameKeyRepository
-                        .findByOrderDetailId(detail.getId());
+                // Lấy KEY
+                List<GameKey> keys =
+                        gameKeyRepository.findByOrderDetailId(detail.getId());
 
                 if (!keys.isEmpty()) {
                     itemResponse.setKey(keys.get(0).getLicenseKey());
                 }
 
-                // 🔥 Lấy ACCOUNT đã bán
-                List<GameAccount> accounts = gameAccountRepository
-                        .findByOrderDetailId(detail.getId());
+                // Lấy ACCOUNT
+                List<GameAccount> accounts =
+                        gameAccountRepository.findByOrderDetailId(detail.getId());
 
                 if (!accounts.isEmpty()) {
                     itemResponse.setUsername(accounts.get(0).getUsername());
@@ -236,8 +248,7 @@ public class OrderServiceImpl implements OrderService {
 
             response.setItems(itemResponses);
             return response;
-
-        }).toList();
+        });
     }
 }
 
