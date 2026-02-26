@@ -33,6 +33,6 @@ public class MinioService {
                         .build()
         );
 
-        return publicUrl + "/" + bucket + "/" + fileName;
+        return publicUrl + "/" + fileName;
     }
 }
