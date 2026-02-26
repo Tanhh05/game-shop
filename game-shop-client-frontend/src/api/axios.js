@@ -2,13 +2,13 @@ import axios from "axios"
 import router from "@/routers"
 
 const api = axios.create({
-    baseURL: "http://localhost:8080/api",
+    baseURL: `${import.meta.env.VITE_API_URL}/api`,
     headers: {
         "Content-Type": "application/json"
     }
 })
 
-// 🔐 Request Interceptor (gắn token)
+// 🔐 Request Interceptor
 api.interceptors.request.use(config => {
     const token = localStorage.getItem("token")
     if (token) {
@@ -17,7 +17,7 @@ api.interceptors.request.use(config => {
     return config
 })
 
-// 🚨 Response Interceptor (handle 401)
+// 🚨 Response Interceptor
 api.interceptors.response.use(
     response => response,
     async error => {
