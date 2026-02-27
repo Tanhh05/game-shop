@@ -37,48 +37,77 @@ public class SePayWebhookController {
 
         try {
 
-            System.out.println("WEBHOOK RECEIVED: " + payload);
+            System.out.println("===== SEPAY WEBHOOK RECEIVED =====");
+            System.out.println(payload);
 
+            // 1️⃣ Validate payload
+            if (!payload.containsKey("id") ||
+                    !payload.containsKey("transferAmount") ||
+                    !payload.containsKey("content")) {
+
+                System.out.println("Invalid payload structure");
+                return ResponseEntity.badRequest().body("Invalid payload");
+            }
+
+            // 2️⃣ Lấy dữ liệu đúng từ SePay
             String transactionId = payload.get("id").toString();
-            Long amount = Long.parseLong(payload.get("amount").toString());
-            String description = payload.get("description").toString().trim();
 
+            Long amount = Long.parseLong(
+                    payload.get("transferAmount").toString()
+            );
+
+            String depositCode = payload.get("content")
+                    .toString()
+                    .trim()
+                    .toUpperCase();
+
+            System.out.println("TransactionId: " + transactionId);
+            System.out.println("Amount: " + amount);
+            System.out.println("DepositCode: " + depositCode);
+
+            // 3️⃣ Chống cộng tiền 2 lần
             if (walletLogRepository.existsByBankTransactionId(transactionId)) {
+                System.out.println("Transaction already processed");
                 return ResponseEntity.ok("Already processed");
             }
 
+            // 4️⃣ Tìm user theo deposit code
             Optional<User> optionalUser =
-                    userRepository.findByDepositCodeContaining(description);
+                    userRepository.findByDepositCodeContaining(depositCode);
 
             if (optionalUser.isEmpty()) {
-                System.out.println("Không tìm thấy user với description: " + description);
+                System.out.println("User not found with code: " + depositCode);
                 return ResponseEntity.ok("User not found");
             }
 
             User user = optionalUser.get();
 
+            // 5️⃣ Lock ví để tránh race condition
             Wallet wallet = walletRepository
                     .findByUserIdForUpdate(user.getId())
                     .orElseThrow(() -> new RuntimeException("Wallet not found"));
 
-            Long before = wallet.getBalance();
-            Long after = before + amount;
+            Long beforeBalance = wallet.getBalance();
+            Long afterBalance = beforeBalance + amount;
 
-            wallet.setBalance(after);
+            wallet.setBalance(afterBalance);
             wallet.setUpdatedAt(LocalDateTime.now());
             walletRepository.save(wallet);
 
+            // 6️⃣ Lưu log giao dịch
             WalletLog log = new WalletLog();
             log.setWallet(wallet);
             log.setType(WalletLogType.TOPUP);
             log.setAmount(amount);
-            log.setBalanceBefore(before);
-            log.setBalanceAfter(after);
-            log.setRefId(description);
+            log.setBalanceBefore(beforeBalance);
+            log.setBalanceAfter(afterBalance);
+            log.setRefId(depositCode);
             log.setBankTransactionId(transactionId);
             log.setCreatedAt(LocalDateTime.now());
 
             walletLogRepository.save(log);
+
+            System.out.println("TOPUP SUCCESS for user: " + user.getUsername());
 
             return ResponseEntity.ok("OK");
 
