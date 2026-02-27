@@ -20,8 +20,8 @@ import Topbar from "./Topbar.vue";
 .layout {
   display: flex;
   height: 100vh;
-  background: #0f0f0f;
-  color: white;
+  background: radial-gradient(circle at top left, #0f172a, #020617);
+  color: #fff;
 }
 
 .main {
@@ -31,7 +31,7 @@ import Topbar from "./Topbar.vue";
 }
 
 .content {
-  padding: 25px;
+  padding: 30px;
   overflow-y: auto;
 }
 </style>

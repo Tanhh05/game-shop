@@ -74,7 +74,7 @@
 <script setup>
 import { ref, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import productService from '@/services/product.service' // điều chỉnh nếu service có tên khác
+import productService from '@/services/product.service.js' // điều chỉnh nếu service có tên khác
 
 const router = useRouter()
 

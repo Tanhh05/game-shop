@@ -3,7 +3,6 @@
 </template>
 
 <script setup>
-// Không cần gì thêm nếu dùng layout qua router
 </script>
 
 <style>

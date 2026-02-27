@@ -28,7 +28,8 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
                 .allowedOrigins(
                         "https://game-shop-v1.onrender.com",
-                        "http://localhost:5173"
+                        "http://localhost:5173",
+                        "http://localhost:5174"
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")

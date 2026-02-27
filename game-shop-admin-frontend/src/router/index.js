@@ -1,10 +1,11 @@
 import { createRouter, createWebHistory } from "vue-router";
-import AdminLayout from "@/components/layout/AdminLayout.vue";
-import ProductPage from "@/pages/ProductPage.vue";
-import AddProductPage from "@/pages/AddProductPage.vue"; // thêm import
+import AdminLayout from "@/components/AdminLayout.vue";
+import ProductPage from "@/views/ProductPage.vue";
+import AddProductPage from "@/views/AddProductPage.vue";
+import DashboardPage from "@/views/DashboardPage.vue";
 
 const routes = [
-    // Redirects tiện lợi: nhiều nơi có thể dùng '/products' hoặc '/products/add'
+    // Redirect tiện lợi
     {
         path: "/products",
         redirect: "/admin/products"
@@ -14,31 +15,35 @@ const routes = [
         redirect: "/admin/products/add"
     },
 
+    // Nếu ai đó vào /dashboard → chuyển về /admin/dashboard
+    {
+        path: "/dashboard",
+        redirect: "/admin/dashboard"
+    },
+
     {
         path: "/admin",
         component: AdminLayout,
         children: [
-            // mặc định chuyển tới products
             {
                 path: "",
-                redirect: "products"
+                redirect: "dashboard"
             },
 
-            // giữ trang quản lý sản phẩm
+            {
+                path: "dashboard",
+                component: DashboardPage
+            },
+
             {
                 path: "products",
                 component: ProductPage
             },
             {
-                path: "products/add", // truy cập: /admin/products/add
+                path: "products/add",
                 component: AddProductPage
             },
 
-            // các route thường gặp trong admin — redirect về products nếu chưa có page riêng
-            {
-                path: "dashboard",
-                redirect: "products"
-            },
             {
                 path: "orders",
                 redirect: "products"
@@ -48,10 +53,9 @@ const routes = [
                 redirect: "products"
             },
 
-            // nếu có path con lạ khác, chuyển về products để tránh warning
             {
                 path: ":pathMatch(.*)*",
-                redirect: "products"
+                redirect: "dashboard"
             }
         ]
     }

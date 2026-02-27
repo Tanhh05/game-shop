@@ -3,12 +3,12 @@
 
     <input
         type="text"
-        placeholder="🔎 Tìm kiếm sản phẩm, ID tài khoản..."
+        placeholder="🔍 Search data..."
     />
 
     <div class="right">
       🔔
-      <div class="lang">VN ▾</div>
+      ⚙
     </div>
 
   </div>
@@ -17,32 +17,26 @@
 <style scoped>
 .topbar {
   height: 60px;
-  background: #1a120b;
+  background: #0f172a;
+  border-bottom: 1px solid #1e293b;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 20px;
-  border-bottom: 1px solid #2a1a0f;
+  padding: 0 25px;
 }
 
 input {
-  width: 350px;
+  width: 300px;
   padding: 8px 15px;
   border-radius: 20px;
   border: none;
-  background: #2a1a0f;
+  background: #1e293b;
   color: white;
 }
 
 .right {
   display: flex;
   gap: 15px;
-  align-items: center;
-}
-
-.lang {
-  background: #2a1a0f;
-  padding: 5px 10px;
-  border-radius: 8px;
+  font-size: 18px;
 }
 </style>

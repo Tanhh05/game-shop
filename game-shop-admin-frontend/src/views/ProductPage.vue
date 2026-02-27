@@ -76,7 +76,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import productService from "@/services/product.service";
+import productService from "@/services/product.service.js";
 
 const router = useRouter();
 const goAdd = () => {
@@ -122,90 +122,144 @@ const formatPrice = (price) => {
 
 <style scoped>
 .product-page {
-  padding: 20px;
-  color: white;
+  padding: 30px;
+  color: #fff;
 }
 
+/* HEADER */
 .header {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 20px;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.header h2 {
+  font-size: 22px;
+  font-weight: 600;
 }
 
 .btn-add {
-  background: #ff8800;
+  background: linear-gradient(90deg, #2563eb, #3b82f6);
   border: none;
-  padding: 8px 18px;
-  border-radius: 20px;
-  font-weight: bold;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-weight: 500;
+  color: white;
   cursor: pointer;
+  transition: 0.3s;
 }
 
+.btn-add:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+}
+
+/* TABLE BOX */
 .table-box {
-  background: #1a120b;
-  padding: 20px;
-  border-radius: 15px;
+  background: #0f172a;
+  padding: 25px;
+  border-radius: 20px;
+  border: 1px solid #1e293b;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
 }
 
+/* TABLE */
 table {
   width: 100%;
   border-collapse: collapse;
 }
 
-th, td {
-  padding: 12px;
+thead th {
   text-align: left;
+  font-size: 13px;
+  font-weight: 500;
+  color: #94a3b8;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #1e293b;
 }
 
-thead {
-  border-bottom: 1px solid #333;
+tbody tr {
+  transition: 0.2s;
 }
 
+tbody tr:hover {
+  background: #1e293b;
+  border-radius: 12px;
+}
+
+td {
+  padding: 18px 10px;
+  font-size: 14px;
+}
+
+/* PRODUCT COLUMN */
 .product {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  font-weight: 500;
 }
 
 img {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
+  width: 45px;
+  height: 45px;
+  border-radius: 10px;
   object-fit: cover;
+  border: 1px solid #334155;
 }
 
+/* PRICE */
 .price {
-  color: #ff8800;
-  font-weight: bold;
+  color: #3b82f6;
+  font-weight: 600;
 }
 
+/* STATUS */
 .active {
-  background: green;
-  padding: 5px 10px;
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  padding: 6px 12px;
   border-radius: 20px;
   font-size: 12px;
+  font-weight: 500;
 }
 
 .inactive {
-  background: gray;
-  padding: 5px 10px;
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  padding: 6px 12px;
   border-radius: 20px;
   font-size: 12px;
+  font-weight: 500;
 }
 
+/* ACTIONS */
+.actions {
+  font-size: 16px;
+  display: flex;
+  gap: 10px;
+}
+
+.actions span {
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.actions span:hover {
+  transform: scale(1.2);
+}
+
+/* EMPTY */
 .empty {
   text-align: center;
-  padding: 20px;
-  color: #888;
+  padding: 30px;
+  color: #64748b;
 }
 
-.actions {
-  cursor: pointer;
-  font-size: 18px;
-}
-
+/* PAGINATION */
 .pagination {
-  margin-top: 20px;
+  margin-top: 25px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -213,7 +267,21 @@ img {
 }
 
 .pagination button {
-  padding: 6px 12px;
+  background: #1e293b;
+  border: none;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 8px;
   cursor: pointer;
+  transition: 0.2s;
+}
+
+.pagination button:hover {
+  background: #2563eb;
+}
+
+.pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 </style>
