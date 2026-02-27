@@ -13,6 +13,10 @@ import com.example.gameshopbackend.util.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -24,30 +28,45 @@ public class AuthService {
     private final JwtService jwtService;
 
     // REGISTER
+    @Transactional
     public LoginResponse register(RegisterRequest request) {
 
         if (userRepo.existsByUsername(request.getUsername())) {
             throw new BadRequestException("Username đã tồn tại");
         }
 
+        if (userRepo.existsByEmail(request.getEmail())) {
+            throw new BadRequestException("Email đã tồn tại");
+        }
+
         User user = new User();
-        user.setUsername(request.getUsername());
-        user.setEmail(request.getEmail());
+        user.setUsername(request.getUsername().trim());
+        user.setEmail(request.getEmail().trim());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(Role.USER);
         user.setStatus(true);
+        user.setCreatedAt(LocalDateTime.now());
 
-        // Lưu trước để có ID
+        // 🔥 Generate depositCode an toàn (không trùng)
+        String depositCode;
+        do {
+            depositCode = "NAP" + UUID.randomUUID()
+                    .toString()
+                    .replace("-", "")
+                    .substring(0, 8)
+                    .toUpperCase();
+        } while (userRepo.existsByDepositCode(depositCode));
+
+        user.setDepositCode(depositCode);
+
         userRepo.save(user);
 
-        // 🔥 Generate depositCode theo ID (không bao giờ trùng)
-        user.setDepositCode("NAP" + user.getId());
-        userRepo.save(user);
-
-        // Tạo ví
+        // 🔥 Tạo ví cho user
         Wallet wallet = new Wallet();
         wallet.setUser(user);
         wallet.setBalance(0L);
+        wallet.setUpdatedAt(LocalDateTime.now());
+
         walletRepo.save(wallet);
 
         String token = jwtService.generateToken(user);
