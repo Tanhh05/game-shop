@@ -37,8 +37,14 @@ public class AuthService {
         user.setRole(Role.USER);
         user.setStatus(true);
 
+        // Lưu trước để có ID
         userRepo.save(user);
 
+        // 🔥 Generate depositCode theo ID (không bao giờ trùng)
+        user.setDepositCode("NAP" + user.getId());
+        userRepo.save(user);
+
+        // Tạo ví
         Wallet wallet = new Wallet();
         wallet.setUser(user);
         wallet.setBalance(0L);
