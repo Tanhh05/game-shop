@@ -17,4 +17,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
   boolean existsByDepositCode(String depositCode);
 
   boolean existsByEmail(String email);
+
+  Optional<User> findByDepositCodeContaining(String depositCode);
 }

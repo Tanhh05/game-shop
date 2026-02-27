@@ -37,27 +37,26 @@ public class SePayWebhookController {
 
         try {
 
-            // 1️⃣ Lấy dữ liệu từ SePay
+            System.out.println("WEBHOOK RECEIVED: " + payload);
+
             String transactionId = payload.get("id").toString();
             Long amount = Long.parseLong(payload.get("amount").toString());
             String description = payload.get("description").toString().trim();
 
-            // 2️⃣ Kiểm tra đã xử lý chưa (chống double webhook)
             if (walletLogRepository.existsByBankTransactionId(transactionId)) {
                 return ResponseEntity.ok("Already processed");
             }
 
-            // 3️⃣ Tìm user theo depositCode
             Optional<User> optionalUser =
-                    userRepository.findByDepositCode(description);
+                    userRepository.findByDepositCodeContaining(description);
 
             if (optionalUser.isEmpty()) {
+                System.out.println("Không tìm thấy user với description: " + description);
                 return ResponseEntity.ok("User not found");
             }
 
             User user = optionalUser.get();
 
-            // 4️⃣ Lock wallet để tránh race condition
             Wallet wallet = walletRepository
                     .findByUserIdForUpdate(user.getId())
                     .orElseThrow(() -> new RuntimeException("Wallet not found"));
@@ -65,12 +64,10 @@ public class SePayWebhookController {
             Long before = wallet.getBalance();
             Long after = before + amount;
 
-            // 5️⃣ Cập nhật ví
             wallet.setBalance(after);
             wallet.setUpdatedAt(LocalDateTime.now());
             walletRepository.save(wallet);
 
-            // 6️⃣ Lưu log giao dịch
             WalletLog log = new WalletLog();
             log.setWallet(wallet);
             log.setType(WalletLogType.TOPUP);
@@ -86,7 +83,8 @@ public class SePayWebhookController {
             return ResponseEntity.ok("OK");
 
         } catch (Exception e) {
-            return ResponseEntity.ok("Error");
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("ERROR");
         }
     }
 
