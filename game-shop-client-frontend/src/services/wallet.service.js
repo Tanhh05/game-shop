@@ -8,6 +8,6 @@ export const getWalletLogs = (userId) => {
     return api.get(`/wallet/logs?userId=${userId}`)
 }
 
-export const topup = (data) => {
-    return api.post(`/wallet/topup`, data)
+export const getDepositInfo = () => {
+    return api.get("/webhook/wallet/deposit-info")
 }

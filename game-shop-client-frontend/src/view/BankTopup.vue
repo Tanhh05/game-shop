@@ -2,8 +2,9 @@
   <div class="topup-container">
     <h2>Nạp tiền qua chuyển khoản</h2>
 
-    <!-- QR HIỂN THỊ LUÔN -->
-    <div v-if="qrData" class="qr-box">
+    <div v-if="loading">Đang tải QR...</div>
+
+    <div v-else-if="qrData" class="qr-box">
       <img :src="qrData.qrUrl" alt="QR Code" class="qr-image" />
 
       <div class="bank-info">
@@ -20,23 +21,27 @@
       </p>
     </div>
 
-    <p v-else>Đang tải QR...</p>
+    <div v-else>
+      Không tải được QR
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from "vue"
-import axios from "axios"
+import { getDepositInfo} from "@/services/wallet.service.js";
 
 const qrData = ref(null)
+const loading = ref(true)
 
 const loadQr = async () => {
   try {
-    const res = await axios.get("/wallet/deposit-info")
+    const res = await getDepositInfo()
     qrData.value = res.data
   } catch (err) {
-    console.error(err)
-    alert("Không tải được QR")
+    console.error("Lỗi load QR:", err)
+  } finally {
+    loading.value = false
   }
 }
 

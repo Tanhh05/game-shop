@@ -96,19 +96,17 @@ public class SePayWebhookController {
         User user = userRepository.findByUsername(auth.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        String bankCode = "MB"; // mã VietQR của MBBank
+        String bankCode = "MBBank";  // đúng format SePay yêu cầu
         String accountNumber = "0346771322";
         String accountName = "PHAN TUAN ANH";
 
         String depositContent = user.getDepositCode();
 
-        // QR VietQR có kèm nội dung chuyển khoản
         String qrUrl = String.format(
-                "https://qr.sepay.vn/img?acc=0346771322&bank=MBBank&amount=&des=&template=compact",
-                bankCode,
+                "https://qr.sepay.vn/img?acc=%s&bank=%s&amount=&des=%s&template=compact",
                 accountNumber,
-                depositContent,
-                accountName.replace(" ", "%20")
+                bankCode,
+                depositContent
         );
 
         return ResponseEntity.ok(Map.of(
