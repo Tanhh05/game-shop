@@ -10,7 +10,7 @@ import Home from "@/view/Home.vue"
 import ProductDetail from "@/view/ProductDetail.vue"
 import Login from "@/view/Login.vue"
 import OrderHistory from "@/view/OrderHistory.vue"
-import TopupPaypal from "@/view/TopupPaypal.vue";
+import BankTopup from "@/view/BankTopup.vue";
 import PaymentSuccess from "@/view/PaymentSuccess.vue";
 
 const routes = [
@@ -37,7 +37,7 @@ const routes = [
             {
                 path: "topup",
                 name: "topup",
-                component: TopupPaypal,
+                component: BankTopup,// ok
                 meta: { requiresAuth: true } // 🔒 bắt buộc đăng nhập mới nạp
             },
             {
