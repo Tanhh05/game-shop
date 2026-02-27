@@ -8,4 +8,5 @@ import java.util.List;
 public interface WalletLogRepository extends JpaRepository<WalletLog, Long> {
     List<WalletLog> findByWalletIdOrderByCreatedAtDesc(Long walletId);
 
+    boolean existsByBankTransactionId(String bankTransactionId);
 }

@@ -1,29 +1,122 @@
 package com.example.gameshopbackend.controller;
 
+import com.example.gameshopbackend.entity.User;
+import com.example.gameshopbackend.entity.Wallet;
+import com.example.gameshopbackend.entity.WalletLog;
+import com.example.gameshopbackend.repository.UserRepository;
+import com.example.gameshopbackend.repository.WalletLogRepository;
+import com.example.gameshopbackend.repository.WalletRepository;
+import com.example.gameshopbackend.util.WalletLogType;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/webhook")
+@RequiredArgsConstructor
 public class SePayWebhookController {
 
+    private final UserRepository userRepository;
+    private final WalletRepository walletRepository;
+    private final WalletLogRepository walletLogRepository;
+
     @PostMapping("/sepay")
-    public ResponseEntity<?> webhook(@RequestBody Map
-            <String, Object> payload) {
+    @Transactional
+    public ResponseEntity<String> handleSePayWebhook(
+            @RequestBody Map<String, Object> payload) {
 
-        System.out.println("SePay payload: " + payload);
+        try {
 
-        return ResponseEntity.ok("OK");
+            // 1️⃣ Lấy dữ liệu từ SePay
+            String transactionId = payload.get("id").toString();
+            Long amount = Long.parseLong(payload.get("amount").toString());
+            String description = payload.get("description").toString().trim();
+
+            // 2️⃣ Kiểm tra đã xử lý chưa (chống double webhook)
+            if (walletLogRepository.existsByBankTransactionId(transactionId)) {
+                return ResponseEntity.ok("Already processed");
+            }
+
+            // 3️⃣ Tìm user theo depositCode
+            Optional<User> optionalUser =
+                    userRepository.findByDepositCode(description);
+
+            if (optionalUser.isEmpty()) {
+                return ResponseEntity.ok("User not found");
+            }
+
+            User user = optionalUser.get();
+
+            // 4️⃣ Lock wallet để tránh race condition
+            Wallet wallet = walletRepository
+                    .findByUserIdForUpdate(user.getId())
+                    .orElseThrow(() -> new RuntimeException("Wallet not found"));
+
+            Long before = wallet.getBalance();
+            Long after = before + amount;
+
+            // 5️⃣ Cập nhật ví
+            wallet.setBalance(after);
+            wallet.setUpdatedAt(LocalDateTime.now());
+            walletRepository.save(wallet);
+
+            // 6️⃣ Lưu log giao dịch
+            WalletLog log = new WalletLog();
+            log.setWallet(wallet);
+            log.setType(WalletLogType.TOPUP);
+            log.setAmount(amount);
+            log.setBalanceBefore(before);
+            log.setBalanceAfter(after);
+            log.setRefId(description);
+            log.setBankTransactionId(transactionId);
+            log.setCreatedAt(LocalDateTime.now());
+
+            walletLogRepository.save(log);
+
+            return ResponseEntity.ok("OK");
+
+        } catch (Exception e) {
+            return ResponseEntity.ok("Error");
+        }
     }
 
-    @GetMapping("/ping")
-    public String ping() {
-        return "pong";
+    @GetMapping("/wallet/deposit-info")
+    public ResponseEntity<?> depositInfo(Authentication auth) {
+
+        User user = userRepository.findByUsername(auth.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        String bankCode = "MB"; // mã VietQR của MBBank
+        String accountNumber = "0346771322";
+        String accountName = "PHAN TUAN ANH";
+
+        String depositContent = user.getDepositCode();
+
+        // QR VietQR có kèm nội dung chuyển khoản
+        String qrUrl = String.format(
+                "https://qr.sepay.vn/img?acc=0346771322&bank=MBBank&amount=&des=&template=compact",
+                bankCode,
+                accountNumber,
+                depositContent,
+                accountName.replace(" ", "%20")
+        );
+
+        return ResponseEntity.ok(Map.of(
+                "bankName", "MBBank",
+                "accountNumber", accountNumber,
+                "accountName", accountName,
+                "depositContent", depositContent,
+                "qrUrl", qrUrl
+        ));
     }
 }
