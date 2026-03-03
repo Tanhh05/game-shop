@@ -36,6 +36,7 @@ public interface PaymentTransactionRepository extends JpaRepository<PaymentTrans
      * Tìm giao dịch theo provider (PayPal, Stripe, v.v.)
      */
     List<PaymentTransaction> findByProviderAndStatus(String provider, PaymentStatus status);
-}
 
+    boolean existsByPaypalOrderIdAndStatus(String paypalOrderId, PaymentStatus status);
+}
 

@@ -1,7 +1,9 @@
 import { createApp } from "vue"
 import App from "./App.vue"
-import router from "./routers"   // ⚠️ kiểm tra path này
+import router from "./routers"
+import pinia from "@/stores"
 
 createApp(App)
-    .use(router)   // 🔥 CÁI NÀY BẮT BUỘC PHẢI CÓ
+    .use(pinia)
+    .use(router)
     .mount("#app")

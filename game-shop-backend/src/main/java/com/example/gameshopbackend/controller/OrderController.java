@@ -2,29 +2,21 @@ package com.example.gameshopbackend.controller;
 
 import com.example.gameshopbackend.dto.request.CreateOrderRequest;
 import com.example.gameshopbackend.dto.response.OrderResponse;
-import com.example.gameshopbackend.entity.Order;
-import com.example.gameshopbackend.mapper.OrderMapper;
-import com.example.gameshopbackend.repository.OrderRepository;
-import com.example.gameshopbackend.repository.UserRepository;
+import com.example.gameshopbackend.security.UserPrincipal;
 import com.example.gameshopbackend.service.OrderService;
-import com.example.gameshopbackend.util.OrderStatus;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -32,7 +24,6 @@ import java.util.List;
 public class OrderController {
 
     private final OrderService orderService;
-    private final UserRepository userRepository;
 
     @GetMapping("/ping")
     public String ping() {
@@ -42,29 +33,44 @@ public class OrderController {
 
     @GetMapping("/history")
     public ResponseEntity<Page<OrderResponse>> getPurchaseHistory(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal UserPrincipal principal,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size
     ) {
 
-        String username = userDetails.getUsername();
-
-        Long userId = userRepository
-                .findByUsername(username)
-                .orElseThrow()
-                .getId();
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
 
         return ResponseEntity.ok(
-                orderService.getPurchaseHistory(userId, page, size)
+                orderService.getPurchaseHistory(principal.getId(), page, size)
         );
     }
 
     @PostMapping("/buy-now")
-    public ResponseEntity<OrderResponse> buyNow(
-            @RequestParam Long userId,
-            @RequestBody CreateOrderRequest request
+    public ResponseEntity<?> buyNow(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestParam(required = false) Long userId,
+            @Valid @RequestBody CreateOrderRequest request
     ) {
-        OrderResponse response = orderService.buyNow(userId, request);
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Unauthorized"));
+        }
+
+        boolean isAdmin = principal.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+
+        if (!isAdmin && userId != null && !principal.getId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Bạn không thể mua hàng thay cho user khác"));
+        }
+
+        Long effectiveUserId = isAdmin
+                ? (userId != null ? userId : principal.getId())
+                : principal.getId();
+
+        OrderResponse response = orderService.buyNow(effectiveUserId, request);
         return ResponseEntity.ok(response);
     }
 

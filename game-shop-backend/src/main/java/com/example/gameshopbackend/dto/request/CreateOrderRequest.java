@@ -1,5 +1,6 @@
 package com.example.gameshopbackend.dto.request;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,5 +11,6 @@ import java.util.List;
 @Setter
 public class CreateOrderRequest {
     @NotEmpty(message = "Order must contain at least one item")
+    @Valid
     private List<OrderItemRequest> items;
 }

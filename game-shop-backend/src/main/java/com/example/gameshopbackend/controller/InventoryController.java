@@ -4,6 +4,7 @@ import com.example.gameshopbackend.dto.request.BulkImportAccountsRequest;
 import com.example.gameshopbackend.dto.request.BulkImportKeysRequest;
 import com.example.gameshopbackend.dto.response.InventoryStatsResponse;
 import com.example.gameshopbackend.service.InventoryService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +30,7 @@ public class InventoryController {
      * Nhập keys hàng loạt
      */
     @PostMapping("/keys/import")
-    public ResponseEntity<?> importKeys(@RequestBody BulkImportKeysRequest request) {
+    public ResponseEntity<?> importKeys(@Valid @RequestBody BulkImportKeysRequest request) {
         try {
             Integer importedCount = inventoryService.importKeys(request);
             return ResponseEntity.ok(Map.of(
@@ -49,7 +50,7 @@ public class InventoryController {
      * Nhập accounts hàng loạt
      */
     @PostMapping("/accounts/import")
-    public ResponseEntity<?> importAccounts(@RequestBody BulkImportAccountsRequest request) {
+    public ResponseEntity<?> importAccounts(@Valid @RequestBody BulkImportAccountsRequest request) {
         try {
             Integer importedCount = inventoryService.importAccounts(request);
             return ResponseEntity.ok(Map.of(
@@ -130,4 +131,3 @@ public class InventoryController {
         }
     }
 }
-

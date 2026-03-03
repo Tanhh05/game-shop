@@ -22,10 +22,14 @@ public class JwtService {
     }
 
     public String generateToken(User user) {
+        return generateToken(user.getId(), user.getUsername(), user.getRole().name());
+    }
+
+    public String generateToken(Long userId, String username, String role) {
         return Jwts.builder()
-                .setSubject(user.getUsername())
-                .claim("userId", user.getId())
-                .claim("role", user.getRole().name())
+                .setSubject(username)
+                .claim("userId", userId)
+                .claim("role", role)
                 .setIssuedAt(new Date())
                 .setExpiration(
                         new Date(System.currentTimeMillis() + 86400000)
@@ -42,6 +46,5 @@ public class JwtService {
                 .getBody();
     }
 }
-
 
 

@@ -1,106 +1,101 @@
-# Game Shop Backend - API Documentation
+# API Documentation - Game Shop Backend
 
-## 🚀 Tổng Quan Hệ Thống
+## 1. Tổng quan
 
-Hệ thống game shop backend hoàn chỉnh với các tính năng:
-- ✅ Xác thực & phân quyền (JWT Auth)
-- ✅ Quản lý sản phẩm & game
-- ✅ Hệ thống ví & thanh toán
-- ✅ Đặt hàng và giao hàng tự động
-- ✅ Quản lý kho hàng (KEY/ACCOUNT)
-- ✅ Quản lý admin
-- ✅ Tích hợp MinIO (lưu trữ ảnh)
-- ✅ Tích hợp PayPal + Card/ATM/Momo
+- Base URL (local): `http://localhost:8080`
+- Content-Type mặc định: `application/json`
+- File upload: `multipart/form-data`
+
+### Lưu ý về authentication
+
+- Backend đã bật JWT filter và phân quyền theo role.
+- Header bắt buộc với endpoint cần đăng nhập:
+
+```http
+Authorization: Bearer <token>
+```
+
+- Role trong hệ thống:
+- `ADMIN`: quản trị hệ thống, quản lý game/product/inventory/users/orders.
+- `CLIENT`: nhóm người dùng sử dụng ứng dụng, tương ứng role `USER` và `RESELLER`.
 
 ---
 
-## 📋 API Endpoints
+## 2. Enum dùng trong API
 
-### 1️⃣ AUTHENTICATION & USER
+- `Role`: `USER | ADMIN | RESELLER`
+- `ProductType`: `KEY | ACCOUNT`
+- `Platform`: `ANDROID | IOS | ALL`
+- `DurationUnit`: `MINUTE | HOUR | DAY | MONTH`
+- `OrderStatus`: `PENDING | SUCCESS | FAILED`
 
-#### Đăng ký
-```
-POST /api/auth/register
-Content-Type: application/json
+---
 
+## 3. Authentication APIs (`/api/auth`)
+
+### 3.1 Register
+
+- `POST /api/auth/register`
+- Body:
+
+```json
 {
   "username": "user123",
   "email": "user@example.com",
   "password": "password123"
 }
-
-Response:
-{
-  "id": 1,
-  "username": "user123",
-  "email": "user@example.com",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "role": "USER"
-}
 ```
 
-#### Đăng nhập
-```
-POST /api/auth/login
-Content-Type: application/json
+### 3.2 Login
 
+- `POST /api/auth/login`
+- Body:
+
+```json
 {
   "username": "user123",
   "password": "password123"
 }
+```
 
-Response:
+- Response mẫu:
+
+```json
 {
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token": "<jwt>",
+  "userId": 1,
   "username": "user123",
-  "role": "USER"
-}
-```
-
-#### Đăng xuất
-```
-POST /api/auth/logout
-Authorization: Bearer <token>
-
-Response:
-{
-  "message": "Đăng xuất thành công"
-}
-```
-
-#### Làm mới Token
-```
-POST /api/auth/refresh-token
-Authorization: Bearer <token>
-
-Response:
-{
-  "message": "Token được làm mới",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
-```
-
-#### Lấy Profile User
-```
-GET /api/user/profile/{userId}
-Authorization: Bearer <token>
-
-Response:
-{
-  "id": 1,
-  "username": "user123",
-  "email": "user@example.com",
   "role": "USER",
-  "status": true,
-  "createdAt": "2026-02-21T10:30:00"
+  "balance": 0
 }
 ```
 
-#### Kiểm tra User Tồn Tại
-```
-GET /api/user/exists/{username}
+### 3.3 Logout
 
-Response:
+- `POST /api/auth/logout`
+
+### 3.4 Refresh token
+
+- `POST /api/auth/refresh-token`
+- Header: `Authorization: Bearer <token>`
+- Response: trả về access token mới (không trả lại token cũ).
+
+---
+
+## 4. User APIs (`/api/user`)
+
+### 4.1 Lấy profile theo userId
+
+- `GET /api/user/profile/{userId}`
+- `CLIENT`: chỉ xem được profile của chính mình.
+- `ADMIN`: xem được mọi user.
+
+### 4.2 Kiểm tra username tồn tại
+
+- `GET /api/user/exists/{username}`
+- Response mẫu:
+
+```json
 {
   "username": "user123",
   "exists": true
@@ -109,694 +104,486 @@ Response:
 
 ---
 
-### 2️⃣ GAMES (Quản lý Game)
+## 5. Game APIs (`/api/games`)
 
-#### Lấy Danh Sách Game
-```
-GET /api/games?page=0&size=10&sortBy=id&direction=asc
-Authorization: Bearer <token>
+### 5.1 Danh sách game active (phân trang)
 
-Response: (Paginated)
+- `GET /api/games?page=0&size=10&sortBy=id&direction=asc`
+
+### 5.2 Chi tiết game theo id
+
+- `GET /api/games/{id}`
+
+### 5.3 Chi tiết game theo slug
+
+- `GET /api/games/slug/{slug}`
+
+### 5.4 Tạo game (multipart)
+
+- `POST /api/games`
+- Content-Type: `multipart/form-data`
+- Parts:
+- `data`: JSON string của `GameRequest`
+- `file` (optional): ảnh thumbnail
+
+`GameRequest`:
+
+```json
 {
-  "content": [
-    {
-      "id": 1,
-      "name": "Game Name",
-      "slug": "game-name",
-      "thumbnail": "http://localhost:9000/product-images/...",
-      "description": "Game description",
-      "status": true,
-      "createdAt": "2026-02-21T10:30:00"
-    }
-  ],
-  "totalElements": 50,
-  "totalPages": 5
-}
-```
-
-#### Lấy Game Theo ID
-```
-GET /api/games/{id}
-Authorization: Bearer <token>
-
-Response:
-{
-  "id": 1,
-  "name": "Game Name",
-  "slug": "game-name",
-  "thumbnail": "...",
-  "description": "...",
-  "status": true,
-  "createdAt": "2026-02-21T10:30:00"
-}
-```
-
-#### Lấy Game Theo Slug
-```
-GET /api/games/slug/{slug}
-Authorization: Bearer <token>
-```
-
-#### Tạo Game (Admin Only)
-```
-POST /api/games
-Authorization: Bearer <admin-token>
-Content-Type: multipart/form-data
-
-data: {
-  "name": "New Game",
-  "slug": "new-game",
-  "description": "Game description",
+  "name": "Valorant",
+  "slug": "valorant",
+  "thumbnail": "https://...",
+  "description": "FPS Game",
   "status": true
 }
-file: <image_file>
-
-Response: (Same as GET)
 ```
 
-#### Cập Nhật Game (Admin Only)
-```
-PATCH /api/games/{id}
-Authorization: Bearer <admin-token>
-Content-Type: multipart/form-data
+### 5.5 Cập nhật game (multipart)
 
-data: {
-  "name": "Updated Name",
-  "description": "..."
-}
-file: <image_file> (optional)
-```
+- `PATCH /api/games/{id}`
+- Content-Type: `multipart/form-data`
+- Parts giống create
 
-#### Thay Đổi Trạng Thái Game (Admin Only)
-```
-PATCH /api/games/{id}/status?status=false
-Authorization: Bearer <admin-token>
+### 5.6 Đổi trạng thái game
 
-Response:
-{
-  "message": "Cập nhật trạng thái game thành công"
-}
-```
+- `PATCH /api/games/{id}/status?status=true`
 
-#### Xóa Game (Admin Only)
-```
-DELETE /api/games/{id}
-Authorization: Bearer <admin-token>
+### 5.7 Xóa game
 
-Response:
-{
-  "message": "Xóa game thành công"
-}
-```
+- `DELETE /api/games/{id}`
 
 ---
 
-### 3️⃣ PRODUCTS (Quản lý Sản Phẩm)
+## 6. Product APIs (`/api/products`)
 
-#### Lấy Danh Sách Sản Phẩm
-```
-GET /api/products?page=0&size=10&sortBy=id&direction=asc
-Authorization: Bearer <token>
+### 6.1 Tạo sản phẩm (multipart)
 
-Response: (Paginated)
+- `POST /api/products`
+- Quyền: `ADMIN`
+- Content-Type: `multipart/form-data`
+- Form-data:
+- `data` (bắt buộc): JSON string theo `ProductRequest`
+- `file` (không bắt buộc): ảnh thumbnail. Nếu có file, BE sẽ upload và tự gán vào `thumbnail`.
+- Validate bắt buộc trong BE: `gameId`, `title`, `slug`
+
+Ví dụ `data`:
+
+```json
 {
-  "content": [
-    {
-      "id": 1,
-      "game": { "id": 1, "name": "Game Name" },
-      "type": "KEY",
-      "platform": "ALL",
-      "title": "Game KEY",
-      "shortDescription": "...",
-      "description": "...",
-      "price": 50000,
-      "thumbnail": "...",
-      "slug": "game-key",
-      "status": true,
-      "createdAt": "2026-02-21T10:30:00"
-    }
-  ]
-}
-```
-
-#### Lấy Sản Phẩm Theo Slug
-```
-GET /api/products/slug/{slug}
-Authorization: Bearer <token>
-```
-
-#### Lấy Sản Phẩm Theo Game
-```
-GET /api/products/game/{gameId}
-Authorization: Bearer <token>
-
-Response: Array of products
-```
-
-#### Tạo Sản Phẩm (Admin Only)
-```
-POST /api/products
-Authorization: Bearer <admin-token>
-Content-Type: multipart/form-data
-
-data: {
   "gameId": 1,
   "type": "KEY",
   "platform": "ALL",
-  "title": "Game KEY",
-  "shortDescription": "...",
-  "description": "...",
-  "price": 50000,
-  "slug": "game-key",
-  "status": true
+  "title": "Valorant Points 475",
+  "shortDescription": "Gói nạp nhanh",
+  "description": "Mô tả chi tiết",
+  "thumbnail": "https://...",
+  "slug": "valorant-points-475",
+  "status": true,
+  "packages": [
+    {
+      "name": "Mặc định",
+      "price": 120000,
+      "durationValue": 30,
+      "durationUnit": "DAY"
+    }
+  ]
 }
-file: <image_file>
 ```
 
-#### Thay Đổi Trạng Thái Sản Phẩm (Admin Only)
+Ví dụ cURL:
+
+```bash
+curl -X POST 'http://localhost:8080/api/products' \
+  -H 'Authorization: Bearer <admin_token>' \
+  -F 'data={
+    "gameId":1,
+    "type":"KEY",
+    "platform":"ALL",
+    "title":"Valorant Points 475",
+    "shortDescription":"Gói nạp nhanh",
+    "description":"Mô tả chi tiết",
+    "slug":"valorant-points-475",
+    "status":true,
+    "packages":[{"name":"Mặc định","price":120000,"durationValue":30,"durationUnit":"DAY"}]
+  }' \
+  -F 'file=@/path/to/image.png'
 ```
-PATCH /api/products/{id}/status?status=false
-Authorization: Bearer <admin-token>
-```
+
+Response thành công: `201 Created` (trả về `ProductResponse`).
+
+### 6.2 Danh sách sản phẩm active (phân trang)
+
+- `GET /api/products?page=0&size=10&sortBy=id&direction=asc`
+
+### 6.3 Danh sách sản phẩm theo game
+
+- `GET /api/products/game/{gameId}`
+
+### 6.4 Chi tiết sản phẩm theo slug
+
+- `GET /api/products/slug/{slug}`
+
+### 6.5 Đổi trạng thái sản phẩm
+
+- `PATCH /api/products/{id}/status?status=true`
 
 ---
 
-### 4️⃣ ORDERS (Đặt Hàng)
+## 7. Order APIs (`/api/orders`)
 
-#### Tạo Đơn Hàng (Cart)
-```
-POST /api/orders
-Authorization: Bearer <token>
-Content-Type: application/json
-?userId=1
+### 7.1 Health check order module
 
+- `GET /api/orders/ping`
+
+### 7.2 Lịch sử mua hàng (phân trang)
+
+- `GET /api/orders/history?page=0&size=5`
+- API dùng `@AuthenticationPrincipal` để lấy user hiện tại.
+
+### 7.3 Mua ngay
+
+- `POST /api/orders/buy-now`
+- `CLIENT`: mua cho chính mình (không cần `userId`).
+- `ADMIN`: có thể truyền `?userId={id}` để mua thay user.
+- Body (`CreateOrderRequest`):
+
+```json
 {
   "items": [
     {
       "productId": 1,
+      "packageId": 1,
       "quantity": 1
     }
   ]
 }
+```
 
-Response:
+- Response mẫu (`OrderResponse`):
+
+```json
 {
-  "id": 1,
+  "id": 10,
   "userId": 1,
-  "totalAmount": 50000,
-  "status": "PENDING",
-  "createdAt": "2026-02-21T10:30:00",
-  "items": [...]
-}
-```
-
-#### Lấy Cart
-```
-GET /api/orders/cart?userId=1
-Authorization: Bearer <token>
-
-Response: Array of PENDING orders
-```
-
-#### Mua Ngay (Buy Now)
-```
-POST /api/orders/buy-now
-Authorization: Bearer <token>
-Content-Type: application/json
-?userId=1
-
-{
-  "items": [
-    {
-      "productId": 1,
-      "quantity": 1
-    }
-  ]
-}
-
-Response:
-{
-  "id": 1,
+  "username": "user123",
+  "totalAmount": 120000,
   "status": "SUCCESS",
+  "createdAt": "2026-03-03T10:30:00",
   "items": [
     {
-      "type": "KEY",
-      "deliveryKey": "KEY-12345-ABCDE",
-      "deliveryValue": null,
-      "note": "Key sẽ hết hạn trong 7 ngày"
+      "productId": 1,
+      "productName": "Valorant Points 475",
+      "quantity": 1,
+      "price": 120000,
+      "key": "XXXX-YYYY-ZZZZ",
+      "username": null,
+      "password": null
     }
   ]
 }
 ```
 
-#### Hủy Đơn Hàng
-```
-DELETE /api/orders/{orderId}/cancel
-Authorization: Bearer <token>
-
-Response:
-{
-  "message": "Order cancelled"
-}
-```
-
 ---
 
-### 5️⃣ WALLET (Quản Lý Ví)
+## 8. Wallet APIs (`/api/wallet`)
 
-#### Lấy Số Dư Ví
-```
-GET /api/wallet/balance?userId=1
-Authorization: Bearer <token>
+Các API dưới đây đọc user từ `@AuthenticationPrincipal`.
 
-Response:
+### 8.1 Số dư ví
+
+- `GET /api/wallet/balance`
+
+### 8.2 Lịch sử ví
+
+- `GET /api/wallet/logs`
+
+### 8.3 Nạp tiền ví thủ công
+
+- `POST /api/wallet/topup`
+- Body:
+
+```json
 {
-  "userId": 1,
-  "balance": 500000
+  "amount": 100000
 }
 ```
 
-#### Lấy Lịch Sử Ví
-```
-GET /api/wallet/logs?userId=1
-Authorization: Bearer <token>
+### 8.4 Chuyển tiền
 
-Response: Array of wallet logs
-[
-  {
-    "id": 1,
-    "type": "TOPUP",
-    "amount": 100000,
-    "balanceBefore": 400000,
-    "balanceAfter": 500000,
-    "createdAt": "2026-02-21T10:30:00"
-  }
-]
-```
+- `POST /api/wallet/transfer`
+- Body:
 
-#### Nạp Tiền
-```
-POST /api/wallet/topup
-Authorization: Bearer <token>
-Content-Type: application/json
-
+```json
 {
-  "userId": 1,
-  "amount": 100000,
-  "method": "PAYPAL"
-}
-
-Response:
-{
-  "message": "Nạp tiền thành công",
-  "newBalance": 500000
-}
-```
-
-#### Chuyển Tiền
-```
-POST /api/wallet/transfer
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "fromUserId": 1,
   "toUserId": 2,
   "amount": 50000
 }
-
-Response:
-{
-  "message": "Chuyển tiền thành công"
-}
 ```
 
 ---
 
-### 6️⃣ PAYMENTS (Thanh Toán)
+## 9. Payment APIs (`/api/payment`)
 
-#### Thanh Toán PayPal
-```
-POST /api/payment/paypal/create-order
-Authorization: Bearer <token>
-Content-Type: application/json
+### 9.1 Thanh toán bằng thẻ
 
+- `POST /api/payment/card`
+- Body:
+
+```json
 {
   "userId": 1,
-  "amount": 50000
-}
-
-Response:
-{
-  "id": "paypal-order-id",
-  "status": "CREATED"
-}
-```
-
-#### Xác Nhận Thanh Toán PayPal
-```
-POST /api/payment/paypal/capture
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "orderId": "paypal-order-id"
-}
-
-Response:
-{
-  "status": "COMPLETED",
-  "message": "Thanh toán thành công"
-}
-```
-
-#### Thanh Toán Bằng Thẻ (Card)
-```
-POST /api/payment/card
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "userId": 1,
-  "amount": 50000,
-  "cardNumber": "4532 1234 5678 9010",
-  "cardHolderName": "JOHN DOE",
-  "expiryDate": "12/25",
+  "amount": 200000,
+  "cardNumber": "4111111111111111",
+  "cardHolderName": "NGUYEN VAN A",
+  "expiryDate": "12/29",
   "cvv": "123",
   "bankCode": "VISA"
 }
-
-Response:
-{
-  "message": "Thanh toán bằng thẻ thành công",
-  "transactionId": "CARD_...",
-  "status": "SUCCESS"
-}
 ```
 
-#### Thanh Toán Bằng ATM/Ngân Hàng
-```
-POST /api/payment/atm
-Authorization: Bearer <token>
-Content-Type: application/json
+### 9.2 Thanh toán ATM (tạo yêu cầu)
 
+- `POST /api/payment/atm`
+- Body:
+
+```json
 {
   "userId": 1,
-  "amount": 50000,
-  "bankCode": "VIETCOMBANK",
+  "amount": 200000,
+  "bankCode": "VCB",
   "bankAccountNumber": "0123456789",
-  "bankAccountName": "GAME SHOP",
-  "description": "Nạp tiền game shop"
-}
-
-Response:
-{
-  "message": "Yêu cầu thanh toán ATM được tạo",
-  "transactionId": "ATM_...",
-  "status": "PENDING",
-  "instruction": "Vui lòng chuyển khoản đến tài khoản được cung cấp"
+  "bankAccountName": "NGUYEN VAN A",
+  "description": "NAP TIEN"
 }
 ```
 
-#### Thanh Toán Bằng Momo
-```
-POST /api/payment/momo
-Authorization: Bearer <token>
-Content-Type: application/json
+### 9.3 Thanh toán Momo
 
+- `POST /api/payment/momo`
+- Body:
+
+```json
 {
   "userId": 1,
-  "amount": 50000,
-  "phoneNumber": "0912345678",
-  "description": "Nạp tiền game shop"
-}
-
-Response:
-{
-  "message": "Thanh toán Momo thành công",
-  "transactionId": "MOMO_...",
-  "status": "SUCCESS"
+  "amount": 200000,
+  "phoneNumber": "0901234567",
+  "description": "Nap vi"
 }
 ```
 
 ---
 
-### 7️⃣ INVENTORY (Quản Lý Kho)
+## 10. PayPal APIs (`/api/paypal`)
 
-#### Nhập Keys Hàng Loạt
-```
-POST /api/inventory/keys/import
-Authorization: Bearer <admin-token>
-Content-Type: application/json
+Các API này kiểm tra `@AuthenticationPrincipal` trước khi xử lý.
 
+### 10.1 Tạo PayPal order
+
+- `POST /api/paypal/create-order`
+- Body:
+
+```json
 {
-  "productId": 1,
-  "keys": [
-    "KEY-12345-ABCDE",
-    "KEY-12345-BCDEF",
-    "KEY-12345-CDEFG"
-  ]
-}
-
-Response:
-{
-  "message": "Import keys thành công",
-  "count": 3,
-  "productId": 1
+  "amount": 10
 }
 ```
 
-#### Nhập Accounts Hàng Loạt
-```
-POST /api/inventory/accounts/import
-Authorization: Bearer <admin-token>
-Content-Type: application/json
+### 10.2 Capture PayPal order
 
+- `POST /api/paypal/capture`
+- Body:
+
+```json
+{
+  "orderId": "5O190127TN364715T"
+}
+```
+
+- Response mẫu:
+
+```json
+{
+  "message": "Nạp tiền thành công",
+  "amountVnd": 250000
+}
+```
+
+---
+
+## 11. SePay Webhook APIs (`/api/webhook`)
+
+### 11.1 Nhận webhook nạp tiền từ SePay
+
+- `POST /api/webhook/sepay`
+- Body mẫu tối thiểu:
+
+```json
+{
+  "id": "BANK_TX_001",
+  "transferAmount": 100000,
+  "content": "NAP123ABC"
+}
+```
+
+### 11.2 Lấy thông tin nạp tiền/QR
+
+- `GET /api/webhook/wallet/deposit-info`
+- API dùng `Authentication auth` để lấy user hiện tại.
+
+---
+
+## 12. File Upload API (`/api/files`)
+
+### 12.1 Upload file
+
+- `POST /api/files/upload`
+- Content-Type: `multipart/form-data`
+- Param: `file`
+- Response: URL public của file
+
+---
+
+## 13. Inventory APIs (`/api/inventory`)
+
+### 13.1 Import key hàng loạt
+
+- `POST /api/inventory/keys/import`
+- Body:
+
+```json
 {
   "productId": 1,
+  "keys": ["KEY-AAA-111", "KEY-BBB-222"]
+}
+```
+
+### 13.2 Import account hàng loạt
+
+- `POST /api/inventory/accounts/import`
+- Body:
+
+```json
+{
+  "productId": 2,
   "accounts": [
     {
-      "username": "user1",
-      "password": "pass123"
-    },
-    {
-      "username": "user2",
-      "password": "pass456"
+      "username": "acc_1",
+      "password": "pass_1"
     }
   ]
 }
-
-Response:
-{
-  "message": "Import accounts thành công",
-  "count": 2,
-  "productId": 1
-}
 ```
 
-#### Lấy Thống Kê Kho Sản Phẩm
-```
-GET /api/inventory/stats/{productId}
-Authorization: Bearer <admin-token>
+### 13.3 Thống kê kho theo sản phẩm
 
-Response:
-{
-  "productId": 1,
-  "productName": "Game KEY",
-  "availableKeys": 100,
-  "soldKeys": 50,
-  "availableAccounts": 0,
-  "soldAccounts": 0,
-  "totalInventory": 150
-}
-```
+- `GET /api/inventory/stats/{productId}`
 
-#### Lấy Thống Kê Kho Toàn Bộ
-```
-GET /api/inventory/stats
-Authorization: Bearer <admin-token>
+### 13.4 Thống kê kho toàn bộ sản phẩm
 
-Response: Array of stats
-```
+- `GET /api/inventory/stats`
 
-#### Xóa Key Từ Kho
-```
-DELETE /api/inventory/keys/{keyId}
-Authorization: Bearer <admin-token>
+### 13.5 Xóa key trong kho
 
-Response:
-{
-  "message": "Xóa key thành công"
-}
-```
+- `DELETE /api/inventory/keys/{keyId}`
 
-#### Xóa Account Từ Kho
-```
-DELETE /api/inventory/accounts/{accountId}
-Authorization: Bearer <admin-token>
+### 13.6 Xóa account trong kho
 
-Response:
-{
-  "message": "Xóa account thành công"
-}
-```
+- `DELETE /api/inventory/accounts/{accountId}`
 
 ---
 
-### 8️⃣ ADMIN (Quản Lý Admin)
+## 14. Admin APIs (`/api/admin`)
 
-#### Lấy Danh Sách Users
-```
-GET /api/admin/users?page=0&size=20
-Authorization: Bearer <admin-token>
+### 14.1 Quản lý user
 
-Response: (Paginated)
-```
+- `GET /api/admin/users?page=0&size=20`
+- `GET /api/admin/users/{id}`
+- `PATCH /api/admin/users/{id}/status?status=true`
+- `GET /api/admin/users/{id}/orders`
+- `GET /api/admin/users/{id}/wallet`
 
-#### Lấy Chi Tiết User
-```
-GET /api/admin/users/{id}
-Authorization: Bearer <admin-token>
-```
+### 14.2 Quản lý order
 
-#### Thay Đổi Trạng Thái User (Khóa/Mở)
-```
-PATCH /api/admin/users/{id}/status?status=false
-Authorization: Bearer <admin-token>
+- `GET /api/admin/orders?page=0&size=20`
+- `GET /api/admin/orders/{id}`
 
-Response:
-{
-  "message": "Cập nhật trạng thái user thành công",
-  "userId": 1,
-  "status": false
-}
-```
+### 14.3 Quản lý inventory (admin namespace)
 
-#### Lấy Lịch Sử Mua Của User
-```
-GET /api/admin/users/{id}/orders
-Authorization: Bearer <admin-token>
+- `POST /api/admin/inventory/import-keys`
+- `POST /api/admin/inventory/import-accounts`
+- `GET /api/admin/inventory/stats/{productId}`
+- `GET /api/admin/inventory/stats`
+- `DELETE /api/admin/inventory/keys/{keyId}`
+- `DELETE /api/admin/inventory/accounts/{accountId}`
 
-Response: Array of orders
-```
-
-#### Xem Ví & Giao Dịch User
-```
-GET /api/admin/users/{id}/wallet
-Authorization: Bearer <admin-token>
-
-Response:
-{
-  "userId": 1,
-  "balance": 500000
-}
-```
-
-#### Lấy Danh Sách Đơn Hàng
-```
-GET /api/admin/orders?page=0&size=20
-Authorization: Bearer <admin-token>
-
-Response: (Paginated)
-```
-
-#### Lấy Chi Tiết Đơn Hàng
-```
-GET /api/admin/orders/{id}
-Authorization: Bearer <admin-token>
-```
+Body import tương tự mục Inventory APIs.
 
 ---
 
-## 🔑 Authentication
+## 15. Test API
 
-Tất cả các endpoint (trừ register/login) yêu cầu JWT token trong header:
-
-```
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-```
-
-Token được cấp khi đăng nhập/đăng ký và có thời hạn 24 giờ.
+- `GET /ping`
 
 ---
 
-## 👥 Roles & Permissions
+## 16. Mẫu lỗi thường gặp
 
-- **USER**: Mua hàng, xem profile, quản lý ví
-- **ADMIN**: Quản lý game, sản phẩm, users, orders, inventory
-- **RESELLER**: Tương tự USER + thêm quyền bán hàng riêng
+- 400 Bad Request
 
----
-
-## 🛒 Order Flow Example
-
-1. **Đăng ký/Đăng nhập**
-   ```
-   POST /api/auth/register → Get token
-   ```
-
-2. **Xem Game & Sản Phẩm**
-   ```
-   GET /api/games
-   GET /api/products/game/{gameId}
-   ```
-
-3. **Mua Hàng (Mua Ngay)**
-   ```
-   POST /api/orders/buy-now
-   → Kiểm tra ví
-   → Trừ tiền
-   → Tự động giao hàng (Key/Account)
-   ```
-
-4. **Hoặc Thêm Vào Cart Rồi Thanh Toán**
-   ```
-   POST /api/orders (add to cart)
-   POST /api/payment/* (thanh toán)
-   ```
-
----
-
-## 📁 File Upload
-
-Tất cả uploads ảnh được lưu trữ trên MinIO:
-- Games: `/product-images/games/`
-- Products: `/product-images/products/`
-
-Response trả về public URL để download.
-
----
-
-## ⚠️ Error Handling
-
-Tất cả lỗi trả về format:
 ```json
 {
-  "error": "Error message",
-  "detail": "Error details"
+  "error": "Thông điệp validate/business"
 }
 ```
 
-HTTP Status Codes:
-- `200`: Success
-- `201`: Created
-- `400`: Bad Request
-- `401`: Unauthorized
-- `403`: Forbidden
-- `404`: Not Found
-- `500`: Internal Server Error
+- 404 Not Found
+
+```json
+{
+  "error": "Không tìm thấy dữ liệu"
+}
+```
+
+- 500 Internal Server Error
+
+```json
+{
+  "error": "Mô tả lỗi tổng quát",
+  "detail": "Chi tiết lỗi"
+}
+```
 
 ---
 
-## 🔒 Security Notes
+## 17. Ma trận phân quyền (Admin vs Client)
 
-- Luôn sử dụng HTTPS trong production
-- Bảo vệ CVV/Card details - luôn encrypt
-- Validate input trên server
-- Rate limiting nên được implement
-- CORS được cấu hình cho frontend URLs
+- Public (không cần token):
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /ping`
+- `GET /api/orders/ping`
+- `GET /api/games/**`
+- `GET /api/products/**`
+- `POST /api/webhook/sepay`
 
----
+- Client + Admin (cần token):
+- `POST /api/auth/logout`
+- `POST /api/auth/refresh-token`
+- `/api/user/**`
+- `/api/orders/history`
+- `/api/orders/buy-now` (owner-based, admin có thể chỉ định `userId`)
+- `/api/wallet/**`
+- `/api/payment/**`
+- `/api/paypal/**`
+- `GET /api/webhook/wallet/deposit-info`
 
-Chúc bạn phát triển thành công! 🚀
-
+- Admin only (cần token role `ADMIN`):
+- `/api/admin/**`
+- `POST /api/games`
+- `PATCH /api/games/**`
+- `DELETE /api/games/**`
+- `POST /api/products`
+- `PATCH /api/products/**`
+- `POST /api/files/upload`
+- `POST /api/inventory/**`
+- `DELETE /api/inventory/**`

@@ -1,28 +1,28 @@
 <script setup>
 import { ref, onMounted } from "vue"
 import { getPurchaseHistory } from "@/services/order.service"
+import { parseApiError } from "@/utils/api-error"
 
 const orders = ref([])
 const loading = ref(false)
+const error = ref("")
 const currentPage = ref(0)
 const totalPages = ref(0)
 const pageSize = 5
 
-// ⚠️ Lấy userId từ localStorage (theo controller hiện tại)
-const userId = localStorage.getItem("userId")
-
 const fetchHistory = async (page = 0) => {
   try {
     loading.value = true
+    error.value = ""
 
-    const res = await getPurchaseHistory(userId, page, pageSize)
+    const res = await getPurchaseHistory(page, pageSize)
 
     orders.value = res.data.content || []
     totalPages.value = res.data.totalPages || 0
     currentPage.value = res.data.number || 0
 
   } catch (err) {
-    console.error("Không tải được lịch sử giao dịch", err)
+    error.value = parseApiError(err, "Không tải được lịch sử giao dịch")
   } finally {
     loading.value = false
   }
@@ -46,6 +46,11 @@ const formatCurrency = (value) => {
       <!-- Loading -->
       <div v-if="loading" class="loading">
         Đang tải dữ liệu...
+      </div>
+
+      <!-- Empty -->
+      <div v-else-if="error" class="empty">
+        {{ error }}
       </div>
 
       <!-- Empty -->

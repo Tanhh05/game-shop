@@ -74,9 +74,11 @@ import { ref, onMounted, computed } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import { getProductBySlug } from "@/services/product.service"
 import { buyNow } from "@/services/order.service"
-import { getBalance } from "@/services/wallet.service"
+import { parseApiError } from "@/utils/api-error"
+import { useAuthStore } from "@/stores/auth"
 const route = useRoute()
 const router = useRouter()
+const auth = useAuthStore()
 
 const product = ref(null)
 const selectedPackageId = ref("")
@@ -107,10 +109,7 @@ const handleBuyNow = async () => {
     return
   }
 
-  const token = localStorage.getItem("token")
-  const userId = localStorage.getItem("userId")
-
-  if (!token) {
+  if (!auth.isAuthenticated) {
     await router.push("/login")
     return
   }
@@ -121,7 +120,7 @@ const handleBuyNow = async () => {
     orderResult.value = null
 
     // 1️⃣ Gọi API mua hàng
-    const res = await buyNow(userId, {
+    const res = await buyNow({
       items: [
         {
           productId: product.value.id,
@@ -132,22 +131,10 @@ const handleBuyNow = async () => {
     })
 
     orderResult.value = res.data
-
-    // 2️⃣ Gọi lại API lấy số dư mới
-    const balanceRes = await getBalance()
-
-    const newBalance = balanceRes.data
-
-    // 3️⃣ Lưu lại localStorage
-    localStorage.setItem("balance", newBalance)
-
-    // 4️⃣ Bắn event cho Header reload
-    window.dispatchEvent(new Event("balance-updated"))
+    await auth.refreshBalance()
 
   } catch (err) {
-    error.value =
-        err.response?.data?.message ||
-        "Mua thất bại. Vui lòng thử lại."
+    error.value = parseApiError(err, "Mua thất bại. Vui lòng thử lại.")
   } finally {
     loading.value = false
   }

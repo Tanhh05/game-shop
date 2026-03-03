@@ -1,79 +1,58 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from "vue"
+import { ref, onMounted } from "vue"
 import { useRouter } from "vue-router"
-import { getBalance } from "@/services/wallet.service"
+import { storeToRefs } from "pinia"
+import { useAuthStore } from "@/stores/auth"
 
 const router = useRouter()
+const auth = useAuthStore()
+const { username, balance, isAuthenticated, role } = storeToRefs(auth)
 
 const isOpen = ref(false)
-const isLogin = ref(false)
-const username = ref("")
-const balance = ref(0)
 
 const toggleMenu = () => {
   isOpen.value = !isOpen.value
 }
 
 const loadUser = async () => {
-  const token = localStorage.getItem("token")
-
-  if (!token) {
-    isLogin.value = false
-    return
-  }
-
-  isLogin.value = true
-  username.value = localStorage.getItem("username") || ""
+  auth.initFromStorage()
+  if (!isAuthenticated.value) return
 
   try {
-    const res = await getBalance()
-    balance.value = res.data
+    await auth.refreshBalance()
   } catch (err) {
     console.error("Không load được số dư:", err)
   }
 }
 
-onMounted(() => {
-  loadUser()
-  window.addEventListener("balance-updated", loadUser)
-})
+onMounted(loadUser)
 
-onBeforeUnmount(() => {
-  window.removeEventListener("balance-updated", loadUser)
-})
-
-const logout = () => {
-  localStorage.clear()
-  balance.value = 0
-  isLogin.value = false
-  router.push("/login")
+const logout = async () => {
+  await auth.logout()
+  await router.push("/login")
 }
 </script>
 
 <template>
   <header class="header">
     <div class="container">
-
-      <!-- Logo -->
       <div class="logo" @click="$router.push('/')">
         ttstoolvip
       </div>
 
-      <!-- Desktop Menu -->
       <nav class="menu desktop">
-        <a class="reseller">RESELLER</a>
-        <router-link to="/topup" class="deposit">
-          NẠP TIỀN WEB
-        </router-link>
-        <template v-if="isLogin">
+        <span class="reseller">RESELLER</span>
+
+        <template v-if="isAuthenticated">
+          <router-link to="/topup" class="deposit">NẠP TIỀN WEB</router-link>
           <router-link to="/orders">LỊCH SỬ</router-link>
 
           <span class="welcome">
-            WELCOME: {{ username }}
+            {{ role === "ADMIN" ? "ADMIN" : "WELCOME" }}: {{ username || "" }}
           </span>
 
           <span class="wallet">
-            SỐ DƯ: {{ balance.toLocaleString() }}đ
+            SỐ DƯ: {{ Number(balance || 0).toLocaleString() }}đ
           </span>
 
           <a href="#" @click.prevent="logout">ĐĂNG XUẤT</a>
@@ -85,23 +64,17 @@ const logout = () => {
         </template>
       </nav>
 
-      <!-- Hamburger -->
-      <div class="hamburger" @click="toggleMenu">
-        ☰
-      </div>
+      <div class="hamburger" @click="toggleMenu">☰</div>
     </div>
 
-    <!-- Mobile Menu -->
     <div class="mobile-menu" v-if="isOpen">
-
-      <template v-if="isLogin">
+      <template v-if="isAuthenticated">
         <div class="mobile-user">
-          <div> {{ username }}</div>
-          <div class="wallet">
-            💰 {{ balance.toLocaleString() }}đ
-          </div>
+          <div>{{ role === "ADMIN" ? "ADMIN" : "USER" }}: {{ username || "" }}</div>
+          <div class="wallet">💰 {{ Number(balance || 0).toLocaleString() }}đ</div>
         </div>
 
+        <router-link to="/topup">NẠP TIỀN WEB</router-link>
         <router-link to="/orders">LỊCH SỬ GIAO DỊCH</router-link>
         <a href="#" @click.prevent="logout">ĐĂNG XUẤT</a>
       </template>
@@ -111,8 +84,7 @@ const logout = () => {
         <router-link to="/register">ĐĂNG KÝ</router-link>
       </template>
 
-      <a class="reseller">RESELLER</a>
-      <a class="deposit">NẠP TIỀN WEB</a>
+      <span class="reseller">RESELLER</span>
     </div>
   </header>
 </template>
@@ -133,7 +105,6 @@ const logout = () => {
   padding: 16px 0;
 }
 
-/* Logo */
 .logo {
   font-size: 22px;
   font-weight: 700;
@@ -141,7 +112,6 @@ const logout = () => {
   cursor: pointer;
 }
 
-/* Desktop menu */
 .menu {
   display: flex;
   gap: 24px;
@@ -178,7 +148,6 @@ const logout = () => {
   font-weight: 700;
 }
 
-/* Hamburger */
 .hamburger {
   display: none;
   font-size: 22px;
@@ -189,7 +158,6 @@ const logout = () => {
   border-radius: 6px;
 }
 
-/* Mobile */
 .mobile-menu {
   display: none;
   flex-direction: column;
@@ -198,7 +166,8 @@ const logout = () => {
   gap: 18px;
 }
 
-.mobile-menu a {
+.mobile-menu a,
+.mobile-menu span {
   color: white;
   text-decoration: none;
   font-weight: 600;

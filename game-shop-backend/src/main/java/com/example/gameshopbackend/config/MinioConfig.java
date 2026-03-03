@@ -22,7 +22,7 @@ public class MinioConfig {
         return MinioClient.builder()
                 .endpoint(url)
                 .credentials(accessKey, secretKey)
-                .region("auto")   // QUAN TRỌNG với R2
+                .region("auto")
                 .build();
     }
 }

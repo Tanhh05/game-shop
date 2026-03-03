@@ -22,7 +22,7 @@
     </div>
 
     <div v-else>
-      Không tải được QR
+      {{ error || "Không tải được QR" }}
     </div>
   </div>
 </template>
@@ -30,16 +30,18 @@
 <script setup>
 import { ref, onMounted } from "vue"
 import { getDepositInfo} from "@/services/wallet.service.js";
+import { parseApiError } from "@/utils/api-error"
 
 const qrData = ref(null)
 const loading = ref(true)
+const error = ref("")
 
 const loadQr = async () => {
   try {
     const res = await getDepositInfo()
     qrData.value = res.data
   } catch (err) {
-    console.error("Lỗi load QR:", err)
+    error.value = parseApiError(err, "Lỗi load QR")
   } finally {
     loading.value = false
   }

@@ -40,13 +40,16 @@ Tạo database MySQL:
 CREATE DATABASE gameshop CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
-Cập nhật `src/main/resources/application.yml`:
-```yaml
-spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/gameshop?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-    username: root
-    password: your_password
+Cấu hình qua biến môi trường (không hardcode secret trong YAML):
+
+```bash
+cp .env.example .env
+```
+
+Điền giá trị thật trong `.env`, sau đó export:
+
+```bash
+export $(grep -v '^#' .env | xargs)
 ```
 
 ### 3. Cấu Hình MinIO
@@ -61,16 +64,11 @@ docker run -d \
   minio/minio server /data --console-address ":9001"
 ```
 
-### 4. Cấu Hình PayPal (Optional)
+### 4. Cấu Hình PayPal / MinIO (Optional)
 
-Cập nhật PayPal credentials trong `application.yml`:
-```yaml
-spring:
-  paypal:
-    client-id: your_paypal_client_id
-    client-secret: your_paypal_client_secret
-    base-url: https://api-m.sandbox.paypal.com
-```
+Thiết lập các biến trong `.env`:
+- `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_BASE_URL`
+- `MINIO_URL`, `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY`, `MINIO_BUCKET`, `MINIO_PUBLIC_URL`
 
 ### 5. Build & Chạy
 
@@ -351,4 +349,3 @@ Nếu bạn thích project này, xin vui lòng ⭐ Star repo!
 **Last Updated:** 2026-02-21
 **Version:** 1.0.0
 **Status:** Production Ready ✅
-

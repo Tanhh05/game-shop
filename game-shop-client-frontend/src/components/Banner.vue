@@ -6,7 +6,7 @@
       </h1>
 
       <p>
-        TTS TOOL VIP 2 KÊNH LỚN CỦA ADM
+        TTS TOOL VIP 2 KÊNH LỚN CỦA ADM tanh
       </p>
     </div>
   </section>

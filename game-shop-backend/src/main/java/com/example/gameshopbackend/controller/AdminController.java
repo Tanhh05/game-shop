@@ -12,6 +12,7 @@ import com.example.gameshopbackend.repository.OrderRepository;
 import com.example.gameshopbackend.repository.UserRepository;
 import com.example.gameshopbackend.service.InventoryService;
 import com.example.gameshopbackend.service.WalletService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -220,7 +221,7 @@ public class AdminController {
      * Nhập keys hàng loạt
      */
     @PostMapping("/inventory/import-keys")
-    public ResponseEntity<?> importKeys(@RequestBody BulkImportKeysRequest request) {
+    public ResponseEntity<?> importKeys(@Valid @RequestBody BulkImportKeysRequest request) {
         try {
             Integer importedCount = inventoryService.importKeys(request);
             return ResponseEntity.ok(Map.of("message", "Import keys thành công", "count", importedCount));
@@ -236,7 +237,7 @@ public class AdminController {
      * Nhập accounts hàng loạt
      */
     @PostMapping("/inventory/import-accounts")
-    public ResponseEntity<?> importAccounts(@RequestBody BulkImportAccountsRequest request) {
+    public ResponseEntity<?> importAccounts(@Valid @RequestBody BulkImportAccountsRequest request) {
         try {
             Integer importedCount = inventoryService.importAccounts(request);
             return ResponseEntity.ok(Map.of("message", "Import accounts thành công", "count", importedCount));
@@ -313,4 +314,3 @@ public class AdminController {
         }
     }
 }
-

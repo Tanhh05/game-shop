@@ -55,6 +55,9 @@ public class SePayWebhookController {
             Long amount = Long.parseLong(
                     payload.get("transferAmount").toString()
             );
+            if (amount <= 0) {
+                return ResponseEntity.badRequest().body("Invalid transferAmount");
+            }
 
             String depositCode = payload.get("content")
                     .toString()

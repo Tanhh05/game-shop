@@ -1,25 +1,21 @@
 package com.example.gameshopbackend.entity;
 
 import com.example.gameshopbackend.util.Role;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
-@Table(name = "users",
+@Table(
+        name = "users",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = "username"),
                 @UniqueConstraint(columnNames = "deposit_code")
-        })
+        }
+)
 @Getter
 @Setter
 public class User {
@@ -28,22 +24,40 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 50)
     private String username;
 
     @Column(nullable = false)
     private String password;
 
+    @Column(length = 100)
     private String email;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Role role;
 
+    @Column(nullable = false)
     private Boolean status = true;
 
-    @Column(name = "deposit_code", unique = true, nullable = false)
+    @Column(name = "deposit_code", nullable = false, unique = true, length = 36)
     private String depositCode;
 
-    private LocalDateTime createdAt = LocalDateTime.now();
-}
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
 
+    @PrePersist
+    public void prePersist() {
+        if (this.depositCode == null) {
+            this.depositCode = UUID.randomUUID().toString();
+        }
+
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
+
+        if (this.status == null) {
+            this.status = true;
+        }
+    }
+}

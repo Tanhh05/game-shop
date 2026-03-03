@@ -4,6 +4,7 @@ import com.example.gameshopbackend.dto.request.ATMPaymentRequest;
 import com.example.gameshopbackend.dto.request.CardPaymentRequest;
 import com.example.gameshopbackend.dto.request.MomoPaymentRequest;
 import com.example.gameshopbackend.service.WalletService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +28,7 @@ public class PaymentController {
      * Trong thực tế nên tích hợp với Stripe, VNPay, Payoo, v.v.
      */
     @PostMapping("/card")
-    public ResponseEntity<?> payByCard(@RequestBody CardPaymentRequest request) {
+    public ResponseEntity<?> payByCard(@Valid @RequestBody CardPaymentRequest request) {
         try {
             if (request.getUserId() == null || request.getAmount() == null) {
                 return ResponseEntity.badRequest().body(Map.of("error", "userId và amount là bắt buộc"));
@@ -59,7 +60,7 @@ public class PaymentController {
      * Thanh toán bằng chuyển khoản ATM/Ngân hàng
      */
     @PostMapping("/atm")
-    public ResponseEntity<?> payByATM(@RequestBody ATMPaymentRequest request) {
+    public ResponseEntity<?> payByATM(@Valid @RequestBody ATMPaymentRequest request) {
         try {
             if (request.getUserId() == null || request.getAmount() == null) {
                 return ResponseEntity.badRequest().body(Map.of("error", "userId và amount là bắt buộc"));
@@ -90,7 +91,7 @@ public class PaymentController {
      * Thanh toán bằng Momo
      */
     @PostMapping("/momo")
-    public ResponseEntity<?> payByMomo(@RequestBody MomoPaymentRequest request) {
+    public ResponseEntity<?> payByMomo(@Valid @RequestBody MomoPaymentRequest request) {
         try {
             if (request.getUserId() == null || request.getAmount() == null) {
                 return ResponseEntity.badRequest().body(Map.of("error", "userId và amount là bắt buộc"));
@@ -117,4 +118,3 @@ public class PaymentController {
         }
     }
 }
-

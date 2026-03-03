@@ -3,6 +3,7 @@ package com.example.gameshopbackend.controller;
 import com.example.gameshopbackend.entity.WalletLog;
 import com.example.gameshopbackend.security.UserPrincipal;
 import com.example.gameshopbackend.service.WalletService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -28,13 +29,13 @@ public class WalletController {
 
     @PostMapping("/topup")
     public void topup(@AuthenticationPrincipal UserPrincipal user,
-                      @RequestBody com.example.gameshopbackend.dto.request.TopupRequest request) {
+                      @Valid @RequestBody com.example.gameshopbackend.dto.request.TopupRequest request) {
         walletService.topup(user.getId(), request.getAmount());
     }
 
     @PostMapping("/transfer")
     public void transfer(@AuthenticationPrincipal UserPrincipal user,
-                         @RequestBody com.example.gameshopbackend.dto.request.TransferRequest request) {
+                         @Valid @RequestBody com.example.gameshopbackend.dto.request.TransferRequest request) {
         walletService.transfer(user.getId(), request.getToUserId(), request.getAmount());
     }
 }

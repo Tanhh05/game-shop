@@ -2,10 +2,13 @@ package com.example.gameshopbackend.controller;
 
 import com.example.gameshopbackend.dto.request.LoginRequest;
 import com.example.gameshopbackend.dto.request.RegisterRequest;
+import com.example.gameshopbackend.jwt.JwtService;
 import com.example.gameshopbackend.service.AuthService;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -20,16 +23,17 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService authService;
+    private final JwtService jwtService;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(
-            @RequestBody RegisterRequest request) {
+            @Valid @RequestBody RegisterRequest request) {
         return ResponseEntity.ok(authService.register(request));
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(
-            @RequestBody LoginRequest request) {
+            @Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
     }
 
@@ -47,14 +51,25 @@ public class AuthController {
      */
     @PostMapping("/refresh-token")
     public ResponseEntity<?> refreshToken(
-            @RequestHeader("Authorization") String token) {
+            @RequestHeader("Authorization") String authHeader) {
         try {
-            if (token == null || !token.startsWith("Bearer ")) {
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Token không hợp lệ"));
             }
-            // Ở đây nên validate token và cấp token mới
-            return ResponseEntity.ok(Map.of("message", "Token được làm mới", "token", token));
-        } catch (Exception ex) {
+
+            String accessToken = authHeader.substring(7);
+            Claims claims = jwtService.extractClaims(accessToken);
+            Long userId = claims.get("userId", Long.class);
+            String username = claims.getSubject();
+            String role = claims.get("role", String.class);
+
+            String newToken = jwtService.generateToken(userId, username, role);
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "Token được làm mới",
+                    "token", newToken
+            ));
+        } catch (JwtException | IllegalArgumentException ex) {
             return ResponseEntity.status(401).body(Map.of("error", "Token không hợp lệ"));
         }
     }
