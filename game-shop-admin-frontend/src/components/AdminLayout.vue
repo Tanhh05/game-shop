@@ -8,20 +8,24 @@
         <router-view />
       </div>
     </div>
+
+    <ConfirmDialog />
+    <ToastContainer />
   </div>
 </template>
 
 <script setup>
-import Sidebar from "./Sidebar.vue";
-import Topbar from "./Topbar.vue";
+import Sidebar from "./Sidebar.vue"
+import Topbar from "./Topbar.vue"
+import ConfirmDialog from "@/components/ui/ConfirmDialog.vue"
+import ToastContainer from "@/components/ui/ToastContainer.vue"
 </script>
 
 <style scoped>
 .layout {
   display: flex;
-  height: 100vh;
-  background: radial-gradient(circle at top left, #0f172a, #020617);
-  color: #fff;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #fbfaf7, #f1efe7 60%, #f7f4ee);
 }
 
 .main {
@@ -31,7 +35,13 @@ import Topbar from "./Topbar.vue";
 }
 
 .content {
-  padding: 30px;
-  overflow-y: auto;
+  padding: 26px 30px 40px;
+  flex: 1;
+}
+
+@media (max-width: 900px) {
+  .content {
+    padding: 20px;
+  }
 }
 </style>

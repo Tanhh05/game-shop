@@ -3,6 +3,7 @@ package com.example.gameshopbackend.repository;
 import com.example.gameshopbackend.entity.GameKey;
 import com.example.gameshopbackend.util.ItemStatus;
 import jakarta.persistence.LockModeType;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
@@ -34,6 +35,7 @@ public interface GameKeyRepository extends JpaRepository<GameKey, Long> {
      * Lấy tất cả các key của một sản phẩm
      */
     List<GameKey> findByProductId(Long productId);
+    Page<GameKey> findByProductId(Long productId, Pageable pageable);
 
     /**
      * Kiểm tra key có tồn tại không
@@ -64,5 +66,4 @@ public interface GameKeyRepository extends JpaRepository<GameKey, Long> {
             Pageable pageable
     );
 }
-
 

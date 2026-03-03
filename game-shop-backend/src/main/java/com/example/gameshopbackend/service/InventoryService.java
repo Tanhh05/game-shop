@@ -2,7 +2,10 @@ package com.example.gameshopbackend.service;
 
 import com.example.gameshopbackend.dto.request.BulkImportAccountsRequest;
 import com.example.gameshopbackend.dto.request.BulkImportKeysRequest;
+import com.example.gameshopbackend.dto.response.AdminInventoryAccountResponse;
+import com.example.gameshopbackend.dto.response.AdminInventoryKeyResponse;
 import com.example.gameshopbackend.dto.response.InventoryStatsResponse;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -44,5 +47,14 @@ public interface InventoryService {
      * Xóa account từ kho
      */
     void deleteAccount(Long accountId);
-}
 
+    /**
+     * Lấy danh sách key của 1 sản phẩm (phân trang)
+     */
+    Page<AdminInventoryKeyResponse> getKeysByProduct(Long productId, int page, int size);
+
+    /**
+     * Lấy danh sách account của 1 sản phẩm (phân trang)
+     */
+    Page<AdminInventoryAccountResponse> getAccountsByProduct(Long productId, int page, int size);
+}

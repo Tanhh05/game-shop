@@ -15,7 +15,7 @@
 <style scoped>
 .hero {
   height: 420px;
-  background: url("http://localhost:9000/product-images/26b4d325-353e-4beb-b3b3-1e33104bdfca-banner.jpg")
+  background: url("https://pub-83cf7eb09c5947e0a56e93794db182d0.r2.dev/64810662-bc6f-460b-9e1a-c8a2f568707c-banner.jpg")
   center/cover no-repeat;
   position: relative;
 }

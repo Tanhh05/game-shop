@@ -3,6 +3,8 @@ package com.example.gameshopbackend.repository;
 import com.example.gameshopbackend.entity.GameAccount;
 import com.example.gameshopbackend.util.ItemStatus;
 import jakarta.persistence.LockModeType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -33,6 +35,7 @@ public interface GameAccountRepository extends JpaRepository<GameAccount, Long> 
      * Lấy tất cả tài khoản của một sản phẩm
      */
     List<GameAccount> findByProductId(Long productId);
+    Page<GameAccount> findByProductId(Long productId, Pageable pageable);
 
     /**
      * Kiểm tra tài khoản có tồn tại không
@@ -50,5 +53,4 @@ public interface GameAccountRepository extends JpaRepository<GameAccount, Long> 
        """)
     Optional<GameAccount> findFirstAvailableForUpdate(Long productId);
 }
-
 
