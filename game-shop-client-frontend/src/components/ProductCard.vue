@@ -1,15 +1,14 @@
 <script setup>
-import { formatPrice } from "@/utils/format"
-
 defineProps({
   product: Object
 })
 </script>
 
 <template>
-  <div class="card">
+  <article class="card">
     <div class="image-wrapper">
-      <img :src="product.thumbnail" />
+      <img :src="product.thumbnail" :alt="product.title" />
+      <div class="image-tag">Hot</div>
     </div>
 
     <div class="content">
@@ -17,40 +16,37 @@ defineProps({
       <p>{{ product.shortDescription }}</p>
 
       <div class="bottom">
-
-
-        <router-link
-            :to="`/product/${product.slug}`"
-            class="btn"
-        >
-          XEM
+        <router-link :to="`/product/${product.slug}`" class="btn">
+          Xem chi tiết
         </router-link>
       </div>
     </div>
-  </div>
+  </article>
 </template>
 
 <style scoped>
 .card {
-  background: #ffffff;   /* nền trắng */
-  border: 1px solid #e5e5e5;
-  border-radius: 0;      /* cạnh vuông */
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
   overflow: hidden;
-  transition: 0.3s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   flex-direction: column;
   height: 100%;
+  font-family: "Manrope", "Segoe UI", sans-serif;
 }
 
 .card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
 }
 
 .image-wrapper {
   width: 100%;
   aspect-ratio: 16/10;
   overflow: hidden;
+  position: relative;
 }
 
 .image-wrapper img {
@@ -59,10 +55,20 @@ defineProps({
   object-fit: cover;
 }
 
-/* Nội dung */
+.image-tag {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(249, 115, 22, 0.9);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
 .content {
-  padding: 18px;
-  background: #ffffff;   /* đảm bảo trắng */
+  padding: 18px 18px 20px;
   color: #111;
   display: flex;
   flex-direction: column;
@@ -70,44 +76,36 @@ defineProps({
 }
 
 .content h3 {
-  margin-bottom: 8px;
+  margin: 0 0 8px;
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 700;
+  font-family: "Space Grotesk", "Manrope", sans-serif;
 }
 
 .content p {
   font-size: 14px;
-  color: #555;
-  margin-bottom: 15px;
+  color: #64748b;
+  margin: 0 0 18px;
   flex-grow: 1;
 }
 
-/* Bottom */
 .bottom {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
 }
 
-/* Giá */
-.price {
-  color: #ff9800;
-  font-weight: 700;
-  font-size: 18px;
-}
-
-/* Button */
 .btn {
-  background: #ff9800;
-  padding: 7px 14px;
-  color: white;
+  background: #f97316;
+  padding: 8px 16px;
+  color: #ffffff;
   text-decoration: none;
   font-weight: 600;
-  border-radius: 4px;
-  transition: 0.3s;
+  border-radius: 999px;
+  transition: background 0.2s ease;
 }
 
 .btn:hover {
-  background: #f57c00;
+  background: #ea580c;
 }
 </style>

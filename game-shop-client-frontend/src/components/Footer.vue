@@ -1,92 +1,98 @@
-<script setup>
-</script>
-
 <template>
   <footer class="footer">
     <div class="container">
+      <div class="footer__grid">
+        <div>
+          <h2>TTS TOOL VIP</h2>
+          <p>
+            Nền tảng giao dịch key game và tài khoản uy tín, cập nhật sản phẩm liên tục, thanh toán nhanh.
+          </p>
+        </div>
 
-      <div class="section">
-        <h2>GIỚI THIỆU TTSTOOLVIP</h2>
-        <p>
-          Là web chuyên cung cấp các bản hack với giá rẻ nhất nhưng vẫn đảm bảo uy tín, chất lượng.
-          Hack hay không hack là sở thích mỗi người. Bạn có tiền thì tiêu thế nào đó là việc của bạn.
-          Không nên dạy người khác cách tiêu tiền khi mà bạn không làm ra tiền giúp họ.
-          Hack hay không hack cũng chỉ là để giải trí. Ra cuộc sống đừng động đến bát cơm của nhau là được.
-        </p>
+        <div>
+          <h3>Điều khoản</h3>
+          <ul>
+            <li>Giao dịch tự động, nhận key ngay</li>
+            <li>Không chia sẻ thông tin thanh toán</li>
+            <li>Hỗ trợ khách hàng trong giờ hành chính</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3>Liên hệ</h3>
+          <ul>
+            <li>Hỗ trợ: inbox fanpage</li>
+            <li>Thời gian: 9:00 - 18:00</li>
+            <li>Ưu tiên xử lý đơn tự động</li>
+          </ul>
+        </div>
       </div>
 
-      <div class="section">
-        <h2 class="highlight">ĐIỀU KHOẢN SỬ DỤNG</h2>
-        <p>oku</p>
+      <div class="footer__meta">
+        <span>TTS TOOL VIP | key game | nạp tiền tự động | giao dịch an toàn</span>
+        <span>©2026 TTS TOOL VIP. All rights reserved.</span>
       </div>
-
-      <div class="links">
-        Ttstoolvip | tts | hack | tool liên quân | tool liên quân mobile |
-        hack playtogether | hack game
-      </div>
-
-      <div class="copyright">
-        Bản quyền ©2022 ttstoolvip. All rights reserved.
-      </div>
-
     </div>
   </footer>
 </template>
 
 <style scoped>
 .footer {
-  background: #0b0b0b;
-  color: #aaa;
-  padding: 60px 0 30px 0;
+  background: #0f172a;
+  color: #cbd5f5;
+  padding: 60px 0 32px;
+  font-family: "Manrope", "Segoe UI", sans-serif;
 }
 
 .container {
   max-width: 1200px;
   width: 92%;
-  margin: auto;
+  margin: 0 auto;
 }
 
-.section {
-  margin-bottom: 40px;
+.footer__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 28px;
 }
 
-.section h2 {
+h2 {
+  font-family: "Space Grotesk", "Manrope", sans-serif;
   font-size: 22px;
-  margin-bottom: 15px;
   color: #ffffff;
-  letter-spacing: 1px;
+  margin: 0 0 12px;
 }
 
-.highlight {
-  color: #ffe600;
+h3 {
+  margin: 0 0 12px;
+  font-size: 16px;
+  color: #f97316;
 }
 
-.section p {
+p {
   font-size: 14px;
-  line-height: 1.7;
-  color: #9c9c9c;
+  line-height: 1.6;
+  color: #cbd5f5;
 }
 
-.links {
-  margin-top: 20px;
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
   font-size: 14px;
-  color: #9c9c9c;
 }
 
-.copyright {
-  margin-top: 30px;
+.footer__meta {
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
   font-size: 13px;
-  color: #777;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .section h2 {
-    font-size: 18px;
-  }
-
-  .section p {
-    font-size: 13px;
-  }
+  color: #94a3b8;
 }
 </style>

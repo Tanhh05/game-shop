@@ -53,44 +53,49 @@ onMounted(fetchProducts)
 </script>
 
 <template>
-  <section class="section">
+  <section class="catalog">
     <div class="container">
-      <h2 class="title">DANH SÁCH GAME</h2>
+      <header class="catalog__header">
+        <div>
+          <p class="eyebrow">Danh mục</p>
+          <h2 class="title">Khám phá kho game mới nhất</h2>
+          <p class="subtitle">Sản phẩm được cập nhật liên tục, giao dịch nhanh và an toàn.</p>
+        </div>
+        <div class="catalog__meta">
+          <div class="meta-card">
+            <div class="meta-label">Trang</div>
+            <div class="meta-value">{{ totalPages === 0 ? 0 : currentPage + 1 }}</div>
+          </div>
+          <div class="meta-card">
+            <div class="meta-label">Sản phẩm</div>
+            <div class="meta-value">{{ products.length }}</div>
+          </div>
+        </div>
+      </header>
 
-      <div v-if="loading" class="loading">
+      <div v-if="loading" class="state-card">
         Đang tải sản phẩm...
       </div>
 
       <div v-else class="grid">
-        <ProductCard
-            v-for="item in products"
-            :key="item.id"
-            :product="item"
-        />
+        <ProductCard v-for="item in products" :key="item.id" :product="item" />
       </div>
 
-      <!-- Pagination -->
       <div class="pagination" v-if="totalPages > 1">
-        <button
-            @click="prevPage"
-            :disabled="currentPage === 0"
-        >
+        <button class="pagination__btn" @click="prevPage" :disabled="currentPage === 0">
           Trang trước
         </button>
 
         <button
-            v-for="page in totalPages"
-            :key="page"
-            :class="{ active: currentPage === page - 1 }"
-            @click="goToPage(page - 1)"
+          v-for="page in totalPages"
+          :key="page"
+          :class="['pagination__btn', { active: currentPage === page - 1 }]"
+          @click="goToPage(page - 1)"
         >
           {{ page }}
         </button>
 
-        <button
-            @click="nextPage"
-            :disabled="currentPage === totalPages - 1"
-        >
+        <button class="pagination__btn" @click="nextPage" :disabled="currentPage === totalPages - 1">
           Trang sau
         </button>
       </div>
@@ -99,93 +104,135 @@ onMounted(fetchProducts)
 </template>
 
 <style scoped>
-.section {
-  background: #ffffff;
-  padding: 60px 0;
+
+.catalog {
+  background: #f8fafc;
+  padding: 64px 0 80px;
   width: 100%;
+  font-family: "Manrope", "Segoe UI", sans-serif;
 }
 
 .container {
   max-width: 1200px;
   width: 92%;
-  margin: auto;
+  margin: 0 auto;
+}
+
+.catalog__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+
+.eyebrow {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  color: #94a3b8;
+  margin: 0 0 12px;
 }
 
 .title {
-  font-size: 24px;
-  font-weight: 700;
-  color: #111;
-  margin-bottom: 35px;
-  padding-left: 14px;
-  border-left: 4px solid #ff9800;
+  font-family: "Space Grotesk", "Manrope", sans-serif;
+  font-size: clamp(26px, 3vw, 34px);
+  margin: 0 0 12px;
+  color: #0f172a;
+}
+
+.subtitle {
+  margin: 0;
+  color: #64748b;
+  font-size: 15px;
+  line-height: 1.6;
+  max-width: 520px;
+}
+
+.catalog__meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(130px, 1fr));
+  gap: 12px;
+}
+
+.meta-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+
+.meta-label {
+  font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.18em;
+  color: #94a3b8;
+}
+
+.meta-value {
+  font-size: 22px;
+  font-weight: 700;
+  margin-top: 6px;
 }
 
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 25px;
+  gap: 24px;
 }
 
-.loading {
+.state-card {
   text-align: center;
   padding: 40px 0;
-  font-size: 16px;
+  font-size: 15px;
+  color: #64748b;
+  border: 1px dashed #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
 }
 
-/* Pagination */
 .pagination {
-  margin-top: 40px;
+  margin-top: 36px;
   display: flex;
   justify-content: center;
   gap: 8px;
   flex-wrap: wrap;
 }
 
-.pagination button {
+.pagination__btn {
   padding: 8px 14px;
-  border: 1px solid #ddd;
-  background: white;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
   cursor: pointer;
   transition: 0.2s;
-  border-radius: 6px;
+  border-radius: 999px;
+  font-weight: 600;
+  color: #334155;
 }
 
-.pagination button:hover {
-  background: #ff9800;
-  color: white;
+.pagination__btn:hover {
+  background: #f97316;
+  color: #ffffff;
+  border-color: #f97316;
 }
 
-.pagination button.active {
-  background: #ff9800;
-  color: white;
-  font-weight: bold;
+.pagination__btn.active {
+  background: #f97316;
+  color: #ffffff;
+  border-color: #f97316;
+  font-weight: 700;
 }
 
-.pagination button:disabled {
+.pagination__btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-/* Responsive */
-@media (max-width: 992px) {
-  .grid {
-    gap: 20px;
-  }
-
-  .title {
-    font-size: 22px;
-  }
-}
-
-@media (max-width: 600px) {
-  .section {
-    padding: 40px 0;
-  }
-
-  .title {
-    font-size: 20px;
+@media (max-width: 768px) {
+  .catalog__meta {
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(120px, 1fr));
   }
 }
 </style>

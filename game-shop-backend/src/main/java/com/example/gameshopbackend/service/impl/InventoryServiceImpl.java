@@ -2,6 +2,8 @@ package com.example.gameshopbackend.service.impl;
 
 import com.example.gameshopbackend.dto.request.BulkImportAccountsRequest;
 import com.example.gameshopbackend.dto.request.BulkImportKeysRequest;
+import com.example.gameshopbackend.dto.response.AdminInventoryAccountResponse;
+import com.example.gameshopbackend.dto.response.AdminInventoryKeyResponse;
 import com.example.gameshopbackend.dto.response.InventoryStatsResponse;
 import com.example.gameshopbackend.entity.GameAccount;
 import com.example.gameshopbackend.entity.GameKey;
@@ -12,6 +14,7 @@ import com.example.gameshopbackend.repository.ProductRepository;
 import com.example.gameshopbackend.service.InventoryService;
 import com.example.gameshopbackend.util.ItemStatus;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -138,6 +141,16 @@ public class InventoryServiceImpl implements InventoryService {
         }
 
         gameAccountRepository.deleteById(accountId);
+    }
+
+    @Override
+    public Page<AdminInventoryKeyResponse> getKeysByProduct(Long productId, int page, int size) {
+        return null;
+    }
+
+    @Override
+    public Page<AdminInventoryAccountResponse> getAccountsByProduct(Long productId, int page, int size) {
+        return null;
     }
 }
 
