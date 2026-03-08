@@ -1,7 +1,7 @@
 package com.example.gameshopbackend.controller;
 
 import com.example.gameshopbackend.entity.WalletLog;
-import com.example.gameshopbackend.security.UserPrincipal;
+import com.example.gameshopbackend.jwt.UserPrincipal;
 import com.example.gameshopbackend.service.WalletService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

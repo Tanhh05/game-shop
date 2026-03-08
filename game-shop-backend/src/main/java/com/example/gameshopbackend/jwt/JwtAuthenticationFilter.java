@@ -1,6 +1,6 @@
 package com.example.gameshopbackend.jwt;
 
-import com.example.gameshopbackend.security.UserPrincipal;
+import com.example.gameshopbackend.jwt.UserPrincipal;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

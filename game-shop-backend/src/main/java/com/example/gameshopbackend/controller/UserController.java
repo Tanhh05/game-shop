@@ -4,7 +4,7 @@ import com.example.gameshopbackend.dto.response.UserResponse;
 import com.example.gameshopbackend.entity.User;
 import com.example.gameshopbackend.mapper.UserMapper;
 import com.example.gameshopbackend.repository.UserRepository;
-import com.example.gameshopbackend.security.UserPrincipal;
+import com.example.gameshopbackend.jwt.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +22,7 @@ import java.util.Map;
 public class UserController {
 
     private final UserRepository userRepository;
-    private final UserMapper userMapper = UserMapper.INSTANCE;
+    private final UserMapper userMapper;
 
     /**
      * Lấy thông tin profile của user

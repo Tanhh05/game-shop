@@ -2,7 +2,7 @@ package com.example.gameshopbackend.controller;
 
 import com.example.gameshopbackend.dto.request.CreateOrderRequest;
 import com.example.gameshopbackend.dto.response.OrderResponse;
-import com.example.gameshopbackend.security.UserPrincipal;
+import com.example.gameshopbackend.jwt.UserPrincipal;
 import com.example.gameshopbackend.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

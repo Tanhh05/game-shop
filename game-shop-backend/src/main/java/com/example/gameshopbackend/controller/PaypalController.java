@@ -6,7 +6,7 @@ import com.example.gameshopbackend.entity.PaymentTransaction;
 import com.example.gameshopbackend.entity.User;
 import com.example.gameshopbackend.repository.PaymentTransactionRepository;
 import com.example.gameshopbackend.repository.UserRepository;
-import com.example.gameshopbackend.security.UserPrincipal;
+import com.example.gameshopbackend.jwt.UserPrincipal;
 import com.example.gameshopbackend.service.PaypalService;
 import com.example.gameshopbackend.service.WalletService;
 import com.example.gameshopbackend.util.PaymentMethod;

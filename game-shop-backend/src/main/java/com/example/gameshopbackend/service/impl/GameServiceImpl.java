@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class GameServiceImpl implements GameService {
 
     private final GameRepository gameRepository;
-    private final GameMapper gameMapper = GameMapper.INSTANCE;
+    private final GameMapper gameMapper;
 
     @Override
     public Page<GameResponse> getAll(Pageable pageable) {
@@ -109,4 +109,3 @@ public class GameServiceImpl implements GameService {
         gameRepository.deleteById(id);
     }
 }
-

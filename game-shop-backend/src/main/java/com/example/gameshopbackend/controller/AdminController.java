@@ -41,7 +41,7 @@ public class AdminController {
     private final OrderRepository orderRepository;
     private final InventoryService inventoryService;
     private final WalletService walletService;
-    private final UserMapper userMapper = UserMapper.INSTANCE;
+    private final UserMapper userMapper;
 
     // ============ USER MANAGEMENT ============
 

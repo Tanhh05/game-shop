@@ -1,4 +1,4 @@
-package com.example.gameshopbackend.security;
+package com.example.gameshopbackend.jwt;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
